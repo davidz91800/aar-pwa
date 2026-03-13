@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>After Action Review V1.0</title>
     <link rel="manifest" href="./manifest.webmanifest">
     <style>
@@ -153,6 +153,13 @@
         .nav-item i {
             font-size: 1.1rem;
             opacity: 0.8;
+        }
+
+        .nav-item.nav-preview-link {
+            margin-top: auto;
+            border: 1px dashed rgba(59, 130, 246, 0.3);
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
         }
 
         /* --- CONTENT AREA --- */
@@ -318,6 +325,76 @@
         .is-invalid {
             border-color: var(--danger) !important;
             box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+        }
+
+        .combo-box {
+            position: relative;
+        }
+
+        .combo-box input {
+            padding-right: 2rem;
+        }
+
+        .combo-toggle {
+            position: absolute;
+            right: 0.35rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1;
+            padding: 0.2rem 0.35rem;
+            border-radius: 6px;
+        }
+
+        .combo-toggle:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--text-main);
+        }
+
+        .combo-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            max-height: 240px;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            z-index: 100;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+        }
+
+        .combo-menu.open {
+            display: block;
+        }
+
+        .combo-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 0.55rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .combo-option:hover,
+        .combo-option.active {
+            background: rgba(59, 130, 246, 0.14);
+        }
+
+        .combo-empty {
+            padding: 0.55rem 0.7rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
         /* --- BUTTONS --- */
@@ -1011,6 +1088,248 @@
         .editor-content li {
             margin-bottom: 0.2rem;
         }
+
+        button,
+        .btn,
+        .nav-item,
+        .classif-item,
+        .w6-tab,
+        .dorese-tab,
+        .combo-option,
+        .combo-toggle,
+        .editor-btn {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 1280px) {
+            body {
+                height: 100dvh;
+            }
+
+            header {
+                height: auto;
+                min-height: 64px;
+                padding: 0.65rem 0.75rem;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+
+            .brand {
+                flex: 1 1 240px;
+                font-size: 1.05rem;
+                letter-spacing: 1px;
+            }
+
+            .toolbar {
+                width: 100%;
+                overflow-x: auto;
+                gap: 0.45rem;
+                padding-bottom: 0.2rem;
+            }
+
+            .toolbar .btn {
+                white-space: nowrap;
+                min-height: 42px;
+                padding: 0.55rem 0.85rem;
+                font-size: 0.82rem;
+            }
+
+            main {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 0.55rem 0.5rem;
+                display: flex;
+                flex-direction: row;
+                gap: 0.45rem;
+                overflow-x: auto;
+                box-shadow: none;
+            }
+
+            .nav-item {
+                min-width: 170px;
+                justify-content: center;
+                font-size: 0.8rem;
+                padding: 0.7rem 0.8rem;
+            }
+
+            .nav-item.nav-preview-link {
+                margin-top: 0;
+            }
+
+            .nav-item:hover {
+                transform: none;
+            }
+
+            .nav-item.active::before {
+                display: none;
+            }
+
+            .content-pane {
+                max-width: 100%;
+                padding: 1rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+            }
+
+            #view-facts,
+            #view-reco {
+                max-height: none !important;
+                padding-bottom: 7rem !important;
+            }
+
+            .classif-selector {
+                grid-template-columns: repeat(3, minmax(150px, 1fr));
+                gap: 0.65rem;
+            }
+
+            .w6-tabs,
+            .dorese-tabs {
+                overflow-x: auto;
+                padding-bottom: 2px;
+            }
+
+            .w6-tab,
+            .dorese-tab {
+                flex: 0 0 auto;
+                min-width: 120px;
+            }
+
+            .editor-btn {
+                min-width: 40px;
+                height: 40px;
+            }
+
+            .editor-content {
+                min-height: 150px;
+            }
+
+            .combo-menu {
+                max-height: 45vh;
+            }
+
+            .combo-option {
+                padding: 0.75rem 0.8rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .btn-back {
+                padding: 0.45rem 0.65rem;
+                font-size: 0.9rem;
+            }
+
+            .brand {
+                font-size: 0.95rem;
+            }
+
+            .toolbar .btn {
+                font-size: 0.8rem;
+            }
+
+            .classif-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            input,
+            textarea,
+            select {
+                font-size: 16px;
+            }
+
+            .combo-menu {
+                position: fixed;
+                left: 12px;
+                right: 12px;
+                bottom: calc(12px + env(safe-area-inset-bottom));
+                top: auto;
+                max-height: 52vh;
+                z-index: 1000;
+                border-radius: 10px;
+                border-width: 1px;
+            }
+
+            #view-preview.active {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .preview-page {
+                width: 100%;
+                min-height: auto;
+                margin: 0 0 18px 0;
+                padding: 0.9rem;
+            }
+
+            .doc-classification {
+                min-width: 0;
+                width: 100%;
+                letter-spacing: 2px;
+                font-size: 0.82rem;
+                padding: 10px 12px;
+            }
+
+            .doc-header {
+                display: block;
+            }
+
+            .doc-header h1 {
+                font-size: 1.35rem;
+                margin-bottom: 0.35rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .section-title h2 {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .btn,
+            .nav-item,
+            .classif-item,
+            .w6-tab,
+            .dorese-tab,
+            .editor-btn,
+            .combo-toggle {
+                min-height: 44px;
+            }
+
+            input,
+            textarea,
+            select {
+                min-height: 44px;
+                padding: 0.72rem 0.75rem;
+            }
+
+            .editor-toolbar {
+                gap: 6px;
+                padding: 8px;
+            }
+
+            .combo-toggle {
+                width: 36px;
+                font-size: 1rem;
+            }
+
+            .combo-box input {
+                padding-right: 2.4rem;
+            }
+        }
     </style>
 </head>
 
@@ -1039,8 +1358,7 @@
             <div class="nav-item" onclick="App.nav(1)"><span>📝</span> 2. FAITS</div>
             <div class="nav-item" onclick="App.nav(2)"><span>🔬</span> 3. ANALYSE</div>
             <div class="nav-item" onclick="App.nav(3)"><span>🎯</span> 4. RECOMMANDATIONS</div>
-            <div class="nav-item" onclick="App.nav(4)"
-                style="margin-top:auto; border: 1px dashed rgba(59, 130, 246, 0.3); color:var(--accent); background: rgba(59, 130, 246, 0.05);">
+            <div class="nav-item nav-preview-link" onclick="App.nav(4)">
                 <span>👁️</span> VISUALISATION / PDF
             </div>
         </nav>
@@ -1153,15 +1471,31 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>PAYS (recherche)</label>
-                            <input type="text" id="meta-log-country" list="meta-log-country-list"
-                                placeholder="Tapez pour rechercher un pays..." oninput="App.updateLogCountry(this.value)">
-                            <datalist id="meta-log-country-list"></datalist>
+                            <div class="combo-box">
+                                <input type="text" id="meta-log-country" placeholder="Tapez pour rechercher un pays..."
+                                    autocomplete="off" oninput="App.handleComboInput('log-country', this.value)"
+                                    onfocus="App.openCombo('log-country')"
+                                    onkeydown="App.handleComboKeydown(event, 'log-country')"
+                                    onblur="App.scheduleCloseCombo('log-country')">
+                                <button type="button" class="combo-toggle" aria-label="Afficher les pays"
+                                    onmousedown="event.preventDefault(); App.cancelScheduledClose('log-country')"
+                                    onclick="App.toggleCombo('log-country')">▾</button>
+                                <div id="meta-log-country-menu" class="combo-menu"></div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Terrain OACI</label>
-                            <input type="text" id="meta-log-airfield" list="meta-log-airfield-list"
-                                placeholder="Ex: LFOE Evreux" oninput="App.update('meta.logAirfield', this.value)">
-                            <datalist id="meta-log-airfield-list"></datalist>
+                            <div class="combo-box">
+                                <input type="text" id="meta-log-airfield" placeholder="Ex: LFOE Evreux"
+                                    autocomplete="off" oninput="App.handleComboInput('log-airfield', this.value)"
+                                    onfocus="App.openCombo('log-airfield')"
+                                    onkeydown="App.handleComboKeydown(event, 'log-airfield')"
+                                    onblur="App.scheduleCloseCombo('log-airfield')">
+                                <button type="button" class="combo-toggle" aria-label="Afficher les terrains"
+                                    onmousedown="event.preventDefault(); App.cancelScheduledClose('log-airfield')"
+                                    onclick="App.toggleCombo('log-airfield')">▾</button>
+                                <div id="meta-log-airfield-menu" class="combo-menu"></div>
+                            </div>
                             <div id="meta-log-airfield-hint"
                                 style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"></div>
                         </div>
@@ -1769,7 +2103,10 @@
                 currentTab: 0,
                 currentCategory: 'DOCTRINE',
                 currentW6Tab: 0,
-                currentDoreseTab: 0
+                currentDoreseTab: 0,
+                comboState: {},
+                comboCloseTimers: {},
+                comboEventsBound: false
             },
 
             normalizeKey: (value) => {
@@ -1923,18 +2260,223 @@
                 if (allowed.includes(currentValue)) select.value = currentValue;
             },
 
-            renderMissionSelectors: () => {
-                const countryList = document.getElementById('meta-log-country-list');
-                if (countryList && countryList.dataset.loaded !== '1') {
-                    const fragment = document.createDocumentFragment();
-                    App.missionConfig.allCountries.forEach((country) => {
-                        fragment.appendChild(App.createOption(country, country));
-                    });
-                    countryList.innerHTML = '';
-                    countryList.appendChild(fragment);
-                    countryList.dataset.loaded = '1';
+            escapeHtml: (value) => {
+                return (value || '')
+                    .toString()
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            },
+
+            getComboConfig: (key) => {
+                if (key === 'log-country') {
+                    return {
+                        inputId: 'meta-log-country',
+                        menuId: 'meta-log-country-menu',
+                        emptyText: 'Aucun pays trouvé.',
+                        getOptions: () => App.missionConfig.allCountries || [],
+                        onInput: (value) => App.updateLogCountry(value),
+                        onSelect: (value) => App.selectLogCountry(value)
+                    };
                 }
 
+                if (key === 'log-airfield') {
+                    return {
+                        inputId: 'meta-log-airfield',
+                        menuId: 'meta-log-airfield-menu',
+                        emptyText: 'Aucun terrain OACI trouvé.',
+                        getOptions: () => App.getLogAirfieldsForCurrentCountry(),
+                        onInput: (value) => App.update('meta.logAirfield', value),
+                        onSelect: (value) => App.selectLogAirfield(value)
+                    };
+                }
+
+                return null;
+            },
+
+            getComboState: (key) => {
+                if (!App.ui.comboState) App.ui.comboState = {};
+                if (!App.ui.comboState[key]) {
+                    App.ui.comboState[key] = { filtered: [], activeIndex: -1 };
+                }
+                return App.ui.comboState[key];
+            },
+
+            isComboOpen: (key) => {
+                const config = App.getComboConfig(key);
+                if (!config) return false;
+                const menu = document.getElementById(config.menuId);
+                return Boolean(menu && menu.classList.contains('open'));
+            },
+
+            openCombo: (key) => {
+                App.cancelScheduledClose(key);
+                App.closeOtherCombos(key);
+                App.renderComboMenu(key, true);
+            },
+
+            closeCombo: (key) => {
+                const config = App.getComboConfig(key);
+                if (!config) return;
+                const menu = document.getElementById(config.menuId);
+                if (menu) menu.classList.remove('open');
+                const state = App.getComboState(key);
+                state.activeIndex = -1;
+            },
+
+            closeOtherCombos: (exceptKey) => {
+                ['log-country', 'log-airfield'].forEach((key) => {
+                    if (key !== exceptKey) App.closeCombo(key);
+                });
+            },
+
+            scheduleCloseCombo: (key) => {
+                if (!App.ui.comboCloseTimers) App.ui.comboCloseTimers = {};
+                App.cancelScheduledClose(key);
+                App.ui.comboCloseTimers[key] = setTimeout(() => App.closeCombo(key), 120);
+            },
+
+            cancelScheduledClose: (key) => {
+                if (!App.ui.comboCloseTimers || !App.ui.comboCloseTimers[key]) return;
+                clearTimeout(App.ui.comboCloseTimers[key]);
+                delete App.ui.comboCloseTimers[key];
+            },
+
+            toggleCombo: (key) => {
+                const config = App.getComboConfig(key);
+                if (!config) return;
+                const input = document.getElementById(config.inputId);
+                if (App.isComboOpen(key)) {
+                    App.closeCombo(key);
+                } else {
+                    if (input) input.focus();
+                    App.openCombo(key);
+                }
+            },
+
+            getFilteredComboOptions: (key) => {
+                const config = App.getComboConfig(key);
+                if (!config) return [];
+                const options = config.getOptions().filter(Boolean);
+                const input = document.getElementById(config.inputId);
+                const query = input ? input.value : '';
+                const normalized = App.normalizeKey(query);
+                let filtered = options;
+                if (normalized) {
+                    const startsWith = [];
+                    const includes = [];
+                    options.forEach((option) => {
+                        const normalizedOption = App.normalizeKey(option);
+                        if (normalizedOption.startsWith(normalized)) {
+                            startsWith.push(option);
+                        } else if (normalizedOption.includes(normalized)) {
+                            includes.push(option);
+                        }
+                    });
+                    filtered = [...startsWith, ...includes];
+                }
+                return filtered.slice(0, 150);
+            },
+
+            renderComboMenu: (key, open = false) => {
+                const config = App.getComboConfig(key);
+                if (!config) return;
+                const menu = document.getElementById(config.menuId);
+                if (!menu) return;
+
+                const state = App.getComboState(key);
+                state.filtered = App.getFilteredComboOptions(key);
+                if (state.activeIndex >= state.filtered.length) state.activeIndex = -1;
+
+                if (!state.filtered.length) {
+                    menu.innerHTML = `<div class="combo-empty">${App.escapeHtml(config.emptyText)}</div>`;
+                } else {
+                    menu.innerHTML = state.filtered.map((value, index) => {
+                        const activeClass = index === state.activeIndex ? ' active' : '';
+                        return `<button type="button" class="combo-option${activeClass}" data-key="${key}" data-index="${index}" data-value="${App.escapeHtml(value)}">${App.escapeHtml(value)}</button>`;
+                    }).join('');
+
+                    menu.querySelectorAll('.combo-option').forEach((btn) => {
+                        btn.addEventListener('mousedown', (event) => {
+                            event.preventDefault();
+                            const idx = Number(btn.dataset.index);
+                            const option = state.filtered[idx];
+                            if (option) App.selectComboOption(key, option);
+                        });
+                    });
+                }
+
+                if (open) menu.classList.add('open');
+            },
+
+            selectComboOption: (key, value) => {
+                const config = App.getComboConfig(key);
+                if (!config) return;
+                config.onSelect(value);
+                App.closeCombo(key);
+                const input = document.getElementById(config.inputId);
+                if (input) input.focus();
+            },
+
+            handleComboInput: (key, value) => {
+                const config = App.getComboConfig(key);
+                if (!config) return;
+                config.onInput(value);
+                App.renderComboMenu(key, true);
+            },
+
+            handleComboKeydown: (event, key) => {
+                const state = App.getComboState(key);
+                const keyName = event.key;
+
+                if (keyName === 'Escape') {
+                    App.closeCombo(key);
+                    return;
+                }
+
+                if (keyName === 'Tab') {
+                    App.closeCombo(key);
+                    return;
+                }
+
+                if (keyName === 'ArrowDown' || keyName === 'ArrowUp') {
+                    event.preventDefault();
+                    App.openCombo(key);
+                    if (!state.filtered.length) return;
+
+                    if (keyName === 'ArrowDown') {
+                        state.activeIndex = Math.min(state.filtered.length - 1, state.activeIndex + 1);
+                    } else {
+                        state.activeIndex = Math.max(0, state.activeIndex - 1);
+                    }
+                    App.renderComboMenu(key, true);
+                    return;
+                }
+
+                if (keyName === 'Enter') {
+                    if (!App.isComboOpen(key)) return;
+                    event.preventDefault();
+                    if (state.activeIndex >= 0 && state.activeIndex < state.filtered.length) {
+                        App.selectComboOption(key, state.filtered[state.activeIndex]);
+                    } else if (state.filtered.length === 1) {
+                        App.selectComboOption(key, state.filtered[0]);
+                    }
+                }
+            },
+
+            initComboInteractions: () => {
+                if (App.ui.comboEventsBound) return;
+                App.ui.comboEventsBound = true;
+                document.addEventListener('pointerdown', (event) => {
+                    if (!event.target.closest('.combo-box')) {
+                        App.closeOtherCombos(null);
+                    }
+                });
+            },
+
+            renderMissionSelectors: () => {
                 App.fillSelectOptions('meta-tac-operation', App.missionConfig.tacOperations, true);
                 App.fillSelectOptions('meta-tac-exercise', App.missionConfig.tacExercises, true);
             },
@@ -1947,29 +2489,28 @@
                 return App.countryNameLookup[App.normalizeKey(trimmed)] || trimmed;
             },
 
+            getLogAirfieldsForCurrentCountry: () => {
+                const resolvedCountry = App.resolveCountryName(App.data.meta.logCountry);
+                return App.missionConfig.logAirfieldsByCountry[resolvedCountry] || [];
+            },
+
             renderLogAirfieldOptions: () => {
-                const datalist = document.getElementById('meta-log-airfield-list');
                 const hint = document.getElementById('meta-log-airfield-hint');
-                if (!datalist) return;
 
                 const resolvedCountry = App.resolveCountryName(App.data.meta.logCountry);
-                const options = App.missionConfig.logAirfieldsByCountry[resolvedCountry] || [];
+                const options = App.getLogAirfieldsForCurrentCountry();
 
-                const fragment = document.createDocumentFragment();
-                options.forEach((airfield) => {
-                    fragment.appendChild(App.createOption(airfield, airfield));
-                });
-                datalist.innerHTML = '';
-                datalist.appendChild(fragment);
-
-                if (!hint) return;
-                if (!App.data.meta.logCountry) {
-                    hint.textContent = "Sélectionnez un pays pour afficher les terrains OACI proposés.";
-                } else if (options.length) {
-                    hint.textContent = `${options.length} terrain(s) proposé(s) pour ${resolvedCountry}.`;
-                } else {
-                    hint.textContent = "Aucun terrain préconfiguré pour ce pays. Vous pouvez saisir un terrain manuellement.";
+                if (hint) {
+                    if (!App.data.meta.logCountry) {
+                        hint.textContent = "Sélectionnez un pays pour afficher les terrains OACI proposés.";
+                    } else if (options.length) {
+                        hint.textContent = `${options.length} terrain(s) proposé(s) pour ${resolvedCountry}.`;
+                    } else {
+                        hint.textContent = "Aucun terrain préconfiguré pour ce pays. Vous pouvez saisir un terrain manuellement.";
+                    }
                 }
+
+                App.renderComboMenu('log-airfield', App.isComboOpen('log-airfield'));
             },
 
             refreshMissionVisibility: () => {
@@ -1998,6 +2539,12 @@
                 if (val !== 'LOG') {
                     App.data.meta.logCountry = "";
                     App.data.meta.logAirfield = "";
+                    const countryInput = document.getElementById('meta-log-country');
+                    const airfieldInput = document.getElementById('meta-log-airfield');
+                    if (countryInput) countryInput.value = "";
+                    if (airfieldInput) airfieldInput.value = "";
+                    App.closeCombo('log-country');
+                    App.closeCombo('log-airfield');
                 }
                 if (val !== 'TAC') {
                     App.data.meta.tacContext = "";
@@ -2012,8 +2559,35 @@
                 App.save();
             },
 
+            selectLogCountry: (value) => {
+                const previousCountry = App.resolveCountryName(App.data.meta.logCountry);
+                App.data.meta.logCountry = value;
+                const resolvedCountry = App.resolveCountryName(value);
+                if (previousCountry !== resolvedCountry) {
+                    App.data.meta.logAirfield = "";
+                    const airfieldInput = document.getElementById('meta-log-airfield');
+                    if (airfieldInput) airfieldInput.value = "";
+                }
+                const countryInput = document.getElementById('meta-log-country');
+                if (countryInput) countryInput.value = value;
+                App.renderLogAirfieldOptions();
+                App.save();
+            },
+
+            selectLogAirfield: (value) => {
+                App.data.meta.logAirfield = value;
+                const airfieldInput = document.getElementById('meta-log-airfield');
+                if (airfieldInput) airfieldInput.value = value;
+                App.save();
+            },
+
             updateLogCountry: (val) => {
                 App.data.meta.logCountry = val;
+                if (!App.isFilled(val)) {
+                    App.data.meta.logAirfield = "";
+                    const airfieldInput = document.getElementById('meta-log-airfield');
+                    if (airfieldInput) airfieldInput.value = "";
+                }
                 App.renderLogAirfieldOptions();
                 App.save();
             },
@@ -2050,6 +2624,7 @@
 
             init: () => {
                 App.setupMissionConfig();
+                App.initComboInteractions();
 
                 // Load from storage
                 const saved = localStorage.getItem('aar_forge_data');
@@ -2260,6 +2835,8 @@
                 document.getElementById('meta-tac-exercise-autre').value = d.meta.tacExerciseAutre || '';
                 App.refreshMissionVisibility();
                 App.renderLogAirfieldOptions();
+                App.renderComboMenu('log-country', false);
+                App.renderComboMenu('log-airfield', false);
                 App.refreshRequiredFieldHighlights();
 
                 // Update Classification UI
