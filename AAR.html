@@ -282,6 +282,10 @@
             font-weight: 600;
         }
 
+        .required-star {
+            color: var(--danger);
+        }
+
         input,
         textarea,
         select {
@@ -309,6 +313,11 @@
         select:focus {
             outline: none;
             border-color: var(--accent);
+        }
+
+        .is-invalid {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
         }
 
         /* --- BUTTONS --- */
@@ -1019,7 +1028,7 @@
             <button class="btn" onclick="document.getElementById('file-input').click()">📂 Charger JSON</button>
             <button class="btn" onclick="App.exportJSON()">💾 Exporter JSON</button>
             <button class="btn" onclick="App.sendQwiEmail()">📧 Send to QWI</button>
-            <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+            <button class="btn btn-primary" onclick="App.printReport()">🖨️ Imprimer / PDF</button>
             <button class="btn btn-danger" onclick="App.reset()" title="Effacer tout">🗑️</button>
         </div>
     </header>
@@ -1059,17 +1068,17 @@
             <div class="card">
                 <div class="card-header">Informations Administratives</div>
                 <div class="form-group">
-                    <label>Titre de l'événement</label>
+                    <label>Titre de l'événement <span class="required-star">*</span></label>
                     <input type="text" id="meta-title" placeholder="Ex: Echec HAHO sur PIKNE 2"
                         onchange="App.update('meta.title', this.value)">
                 </div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Date</label>
+                        <label>Date <span class="required-star">*</span></label>
                         <input type="date" id="meta-date" onchange="App.update('meta.date', this.value)">
                     </div>
                     <div class="form-group">
-                        <label>Grade</label>
+                        <label>Grade <span class="required-star">*</span></label>
                         <select id="meta-grade" onchange="App.updateRank(this.value)" title="Grade du rédacteur">
                             <option value="">-- Sélectionner --</option>
                             <option value="ASP">ASP</option>
@@ -1087,33 +1096,105 @@
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nom</label>
+                        <label>Nom <span class="required-star">*</span></label>
                         <input type="text" id="meta-nom" placeholder="NOM" oninput="App.formatName('nom', this.value)">
                     </div>
                     <div class="form-group">
-                        <label>Prénom</label>
+                        <label>Prénom <span class="required-star">*</span></label>
                         <input type="text" id="meta-prenom" placeholder="Prénom"
                             oninput="App.formatName('prenom', this.value)">
                     </div>
                 </div>
 
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Escadron <span class="required-star">*</span></label>
+                        <select id="meta-unite" onchange="App.updateUnit(this.value)" title="Escadron du rédacteur">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="Binational Air Transport Squadron C-130J">BATS (Binational Air Transport Squadron
+                                C-130J)</option>
+                            <option value="ET 1/61 Touraine">ET 1/61 Touraine</option>
+                            <option value="ET 3/61 Poitou">ET 3/61 Poitou</option>
+                            <option value="ET 4/61 Béarn">ET 4/61 Béarn</option>
+                            <option value="ET 3/62 Ventoux">ET 3/62 Ventoux</option>
+                            <option value="ET 1/62 Vercors">ET 1/62 Vercors</option>
+                            <option value="CIET 340">CIET 340 (Centre d'Instruction des Equipages de Transport)</option>
+                            <option value="EMATT">EMATT (Équipe de Marque Avions de Transport Tactique)</option>
+                            <option value="AUTRE">AUTRE</option>
+                        </select>
+                        <input type="text" id="meta-unite-autre" placeholder="Précisez l'escadron..."
+                            style="display:none; margin-top: 8px;" oninput="App.update('meta.uniteAutre', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Flotte <span class="required-star">*</span></label>
+                        <select id="meta-flotte" onchange="App.updateFleet(this.value)" title="Flotte concernée">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="A-400M">A-400M</option>
+                            <option value="C-130J">C-130J</option>
+                            <option value="CN-235">CN-235</option>
+                            <option value="AUTRE">AUTRE</option>
+                        </select>
+                        <input type="text" id="meta-flotte-autre" placeholder="Précisez la flotte..."
+                            style="display:none; margin-top: 8px;" oninput="App.update('meta.flotteAutre', this.value)">
+                    </div>
+                </div>
+
+                <div class="card-header" style="margin-top: 1.5rem;">Contexte Mission</div>
                 <div class="form-group">
-                    <label>Unité</label>
-                    <select id="meta-unite" onchange="App.updateUnit(this.value)" title="Unité du rédacteur">
+                    <label>Type</label>
+                    <select id="meta-mission-type" onchange="App.updateMissionType(this.value)">
                         <option value="">-- Sélectionner --</option>
-                        <option value="Binational Air Transport Squadron C-130J">BATS (Binational Air Transport Squadron
-                            C-130J)</option>
-                        <option value="ET 1/61 Touraine">ET 1/61 Touraine</option>
-                        <option value="ET 3/61 Poitou">ET 3/61 Poitou</option>
-                        <option value="ET 4/61 Béarn">ET 4/61 Béarn</option>
-                        <option value="ET 3/62 Ventoux">ET 3/62 Ventoux</option>
-                        <option value="ET 1/62 Vercors">ET 1/62 Vercors</option>
-                        <option value="CIET 340">CIET 340 (Centre d'Instruction des Equipages de Transport)</option>
-                        <option value="EMATT">EMATT (Équipe de Marque Avions de Transport Tactique)</option>
-                        <option value="AUTRE">AUTRE</option>
+                        <option value="LOG">LOG</option>
+                        <option value="TAC">TAC</option>
                     </select>
-                    <input type="text" id="meta-unite-autre" placeholder="Précisez l'unité..."
-                        style="display:none; margin-top: 8px;" oninput="App.update('meta.uniteAutre', this.value)">
+                </div>
+
+                <div id="log-config-block" style="display:none;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>PAYS (recherche)</label>
+                            <input type="text" id="meta-log-country" list="meta-log-country-list"
+                                placeholder="Tapez pour rechercher un pays..." oninput="App.updateLogCountry(this.value)">
+                            <datalist id="meta-log-country-list"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Terrain OACI</label>
+                            <input type="text" id="meta-log-airfield" list="meta-log-airfield-list"
+                                placeholder="Ex: LFOE Evreux" oninput="App.update('meta.logAirfield', this.value)">
+                            <datalist id="meta-log-airfield-list"></datalist>
+                            <div id="meta-log-airfield-hint"
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tac-config-block" style="display:none;">
+                    <div class="form-group">
+                        <label>Cadre TAC</label>
+                        <select id="meta-tac-context" onchange="App.updateTacContext(this.value)">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="OPERATIONS">OPERATIONS</option>
+                            <option value="EXERCICE">EXERCICE</option>
+                        </select>
+                    </div>
+
+                    <div id="tac-operations-block" class="form-group" style="display:none;">
+                        <label>Opération</label>
+                        <select id="meta-tac-operation" onchange="App.updateTacOperation(this.value)">
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+                        <input type="text" id="meta-tac-operation-autre" placeholder="Précisez l'opération..."
+                            style="display:none; margin-top: 8px;" oninput="App.update('meta.tacOperationAutre', this.value)">
+                    </div>
+
+                    <div id="tac-exercises-block" class="form-group" style="display:none;">
+                        <label>Exercice</label>
+                        <select id="meta-tac-exercise" onchange="App.updateTacExercise(this.value)">
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+                        <input type="text" id="meta-tac-exercise-autre" placeholder="Précisez l'exercice..."
+                            style="display:none; margin-top: 8px;" oninput="App.update('meta.tacExerciseAutre', this.value)">
+                    </div>
                 </div>
                 </div>
 
@@ -1606,21 +1687,12 @@
                                         </div>
                                     </section>
 
-                                    <section class="doc-section"
-                                        style="margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                                            <div>
-                                                <label
-                                                    style="font-size:0.7rem; font-weight:800; color:#64748b; text-transform:uppercase;">Visa
-                                                    Rédacteur</label>
-                                                <div style="height: 60px; border-bottom: 1px dashed #cbd5e1;"></div>
-                                            </div>
-                                            <div>
-                                                <label
-                                                    style="font-size:0.7rem; font-weight:800; color:#64748b; text-transform:uppercase;">Avis
-                                                    Weapons School</label>
-                                                <div style="height: 60px; border-bottom: 1px dashed #cbd5e1;"></div>
-                                            </div>
+                                    <section class="doc-section" style="margin-top: 32px;">
+                                        <div class="section-title" style="border-left-color: var(--accent);">
+                                            <h2>04. AVIS QWI / WEAPONS SCHOOL</h2>
+                                        </div>
+                                        <div class="section-content">
+                                            <div id="prev-qwi"><span style="opacity:0.3">Aucun avis QWI.</span></div>
                                         </div>
                                     </section>
                                 </div>
@@ -1633,24 +1705,66 @@
 
     </main>
 
+    <script src="./mission-config.js"></script>
     <script>
+        const META_DEFAULTS = {
+            title: "",
+            date: "",
+            grade: "",
+            gradeAutre: "",
+            nom: "",
+            prenom: "",
+            unite: "",
+            uniteAutre: "",
+            flotte: "",
+            flotteAutre: "",
+            classification: "NON PROTÉGÉ",
+            missionType: "",
+            logCountry: "",
+            logAirfield: "",
+            tacContext: "",
+            tacOperation: "",
+            tacOperationAutre: "",
+            tacExercise: "",
+            tacExerciseAutre: ""
+        };
+
+        const FACTS_DEFAULTS = { what: "", why: "", when: "", where: "", who: "", how: "", narrative: "" };
+        const ANALYSIS_DEFAULTS = { content: "" };
+        const RECOS_DEFAULTS = { doctrine: "", organisation: "", rh: "", equipements: "", soutien: "", entrainement: "" };
+        const QWI_DEFAULTS = { advice: "" };
+
+        const FALLBACK_MISSION_CONFIG = {
+            allCountries: ['France'],
+            tacOperations: ['Proche et Moyen Orient (PMO)'],
+            tacExercises: ['TRAINING', 'ATLC', 'TLP', 'ETAP-C Single Ship', 'ETAP-C Multiple Ship'],
+            logAirfieldsByCountry: {
+                France: [
+                    'LFOE Evreux',
+                    'LFOJ Orleans-Bricy',
+                    'LFBM Mont-de-Marsan',
+                    'LFBO Toulouse-Blagnac',
+                    'LFOA Avord',
+                    'LFMI Istres',
+                    'LFSI Saint-Dizier',
+                    'LFMO Orange-Caritat',
+                    'LFMY Salon-de-Provence',
+                    'LFKS Solenzara',
+                    'LFBF Toulouse-Francazal'
+                ]
+            }
+        };
+
         const App = {
             data: {
-                meta: {
-                    title: "",
-                    date: "",
-                    grade: "",
-                    gradeAutre: "",
-                    nom: "",
-                    prenom: "",
-                    unite: "",
-                    uniteAutre: "",
-                    classification: "NON PROTÉGÉ"
-                },
-                facts: { what: "", why: "", when: "", where: "", who: "", how: "", narrative: "" },
-                analysis: { content: "" },
-                recos: { doctrine: "", organisation: "", rh: "", equipements: "", soutien: "", entrainement: "" }
+                meta: { ...META_DEFAULTS },
+                facts: { ...FACTS_DEFAULTS },
+                analysis: { ...ANALYSIS_DEFAULTS },
+                recos: { ...RECOS_DEFAULTS },
+                qwi: { ...QWI_DEFAULTS }
             },
+            missionConfig: { ...FALLBACK_MISSION_CONFIG },
+            countryNameLookup: {},
             ui: {
                 currentTab: 0,
                 currentCategory: 'DOCTRINE',
@@ -1658,18 +1772,294 @@
                 currentDoreseTab: 0
             },
 
+            normalizeKey: (value) => {
+                return (value || '')
+                    .toString()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .trim()
+                    .toUpperCase();
+            },
+
+            isFilled: (value) => {
+                return typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
+            },
+
+            getMissingRequiredFields: () => {
+                const m = App.data.meta;
+                const missing = [];
+
+                if (!App.isFilled(m.title)) missing.push("Titre de l'événement");
+                if (!App.isFilled(m.date)) missing.push('Date');
+                if (!App.isFilled(m.nom)) missing.push('Nom');
+                if (!App.isFilled(m.prenom)) missing.push('Prénom');
+
+                if (!App.isFilled(m.grade)) {
+                    missing.push('Grade');
+                } else if (m.grade === 'AUTRE' && !App.isFilled(m.gradeAutre)) {
+                    missing.push('Grade (précision AUTRE)');
+                }
+
+                if (!App.isFilled(m.unite)) {
+                    missing.push('Escadron');
+                } else if (m.unite === 'AUTRE' && !App.isFilled(m.uniteAutre)) {
+                    missing.push('Escadron (précision AUTRE)');
+                }
+
+                if (!App.isFilled(m.flotte)) {
+                    missing.push('Flotte');
+                } else if (m.flotte === 'AUTRE' && !App.isFilled(m.flotteAutre)) {
+                    missing.push('Flotte (précision AUTRE)');
+                }
+
+                return missing;
+            },
+
+            setInvalidState: (id, invalid) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.toggle('is-invalid', invalid);
+            },
+
+            refreshRequiredFieldHighlights: () => {
+                const m = App.data.meta;
+                App.setInvalidState('meta-title', !App.isFilled(m.title));
+                App.setInvalidState('meta-date', !App.isFilled(m.date));
+                App.setInvalidState('meta-nom', !App.isFilled(m.nom));
+                App.setInvalidState('meta-prenom', !App.isFilled(m.prenom));
+                App.setInvalidState('meta-grade', !App.isFilled(m.grade));
+                App.setInvalidState('meta-grade-autre', m.grade === 'AUTRE' && !App.isFilled(m.gradeAutre));
+                App.setInvalidState('meta-unite', !App.isFilled(m.unite));
+                App.setInvalidState('meta-unite-autre', m.unite === 'AUTRE' && !App.isFilled(m.uniteAutre));
+                App.setInvalidState('meta-flotte', !App.isFilled(m.flotte));
+                App.setInvalidState('meta-flotte-autre', m.flotte === 'AUTRE' && !App.isFilled(m.flotteAutre));
+            },
+
+            validateRequiredFields: (actionLabel) => {
+                const missing = App.getMissingRequiredFields();
+                App.refreshRequiredFieldHighlights();
+                if (!missing.length) return true;
+
+                alert(`Champs obligatoires manquants (${actionLabel}) :\n- ${missing.join('\n- ')}`);
+                App.nav(0);
+                return false;
+            },
+
+            setupMissionConfig: () => {
+                const external = (window.AARMissionConfig && typeof window.AARMissionConfig === 'object')
+                    ? window.AARMissionConfig
+                    : {};
+
+                const logAirfieldsByCountry = (external.logAirfieldsByCountry && typeof external.logAirfieldsByCountry === 'object')
+                    ? external.logAirfieldsByCountry
+                    : FALLBACK_MISSION_CONFIG.logAirfieldsByCountry;
+
+                const allCountries = (Array.isArray(external.allCountries) && external.allCountries.length)
+                    ? [...new Set(external.allCountries.filter(Boolean))]
+                    : [...new Set(Object.keys(logAirfieldsByCountry))];
+
+                const tacOperations = (Array.isArray(external.tacOperations) && external.tacOperations.length)
+                    ? external.tacOperations.filter(Boolean)
+                    : FALLBACK_MISSION_CONFIG.tacOperations;
+
+                const tacExercises = (Array.isArray(external.tacExercises) && external.tacExercises.length)
+                    ? external.tacExercises.filter(Boolean)
+                    : FALLBACK_MISSION_CONFIG.tacExercises;
+
+                allCountries.sort((a, b) => a.localeCompare(b));
+
+                App.missionConfig = {
+                    allCountries,
+                    tacOperations,
+                    tacExercises,
+                    logAirfieldsByCountry
+                };
+
+                App.countryNameLookup = {};
+                App.missionConfig.allCountries.forEach((country) => {
+                    App.countryNameLookup[App.normalizeKey(country)] = country;
+                });
+                Object.keys(App.missionConfig.logAirfieldsByCountry).forEach((country) => {
+                    App.countryNameLookup[App.normalizeKey(country)] = country;
+                });
+            },
+
+            ensureDataShape: () => {
+                if (!App.data || typeof App.data !== 'object') App.data = {};
+
+                App.data.meta = { ...META_DEFAULTS, ...(App.data.meta || {}) };
+                App.data.facts = { ...FACTS_DEFAULTS, ...(App.data.facts || {}) };
+                App.data.analysis = { ...ANALYSIS_DEFAULTS, ...(App.data.analysis || {}) };
+                App.data.recos = { ...RECOS_DEFAULTS, ...(App.data.recos || {}) };
+                App.data.qwi = { ...QWI_DEFAULTS, ...(App.data.qwi || {}) };
+
+                if (Object.prototype.hasOwnProperty.call(App.data.meta, 'pj')) delete App.data.meta.pj;
+            },
+
+            createOption: (value, label) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                return option;
+            },
+
+            fillSelectOptions: (selectId, values, includeAutre = false) => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+
+                const currentValue = select.value;
+                const cleanedValues = values.filter((value) => value && value !== 'AUTRE');
+
+                select.innerHTML = '';
+                select.appendChild(App.createOption('', '-- Sélectionner --'));
+                cleanedValues.forEach((value) => {
+                    select.appendChild(App.createOption(value, value));
+                });
+                if (includeAutre) {
+                    select.appendChild(App.createOption('AUTRE', 'AUTRE'));
+                }
+
+                const allowed = includeAutre ? [...cleanedValues, 'AUTRE'] : cleanedValues;
+                if (allowed.includes(currentValue)) select.value = currentValue;
+            },
+
+            renderMissionSelectors: () => {
+                const countryList = document.getElementById('meta-log-country-list');
+                if (countryList && countryList.dataset.loaded !== '1') {
+                    const fragment = document.createDocumentFragment();
+                    App.missionConfig.allCountries.forEach((country) => {
+                        fragment.appendChild(App.createOption(country, country));
+                    });
+                    countryList.innerHTML = '';
+                    countryList.appendChild(fragment);
+                    countryList.dataset.loaded = '1';
+                }
+
+                App.fillSelectOptions('meta-tac-operation', App.missionConfig.tacOperations, true);
+                App.fillSelectOptions('meta-tac-exercise', App.missionConfig.tacExercises, true);
+            },
+
+            resolveCountryName: (inputCountry) => {
+                if (!inputCountry) return '';
+                const trimmed = inputCountry.trim();
+                if (!trimmed) return '';
+                if (App.missionConfig.logAirfieldsByCountry[trimmed]) return trimmed;
+                return App.countryNameLookup[App.normalizeKey(trimmed)] || trimmed;
+            },
+
+            renderLogAirfieldOptions: () => {
+                const datalist = document.getElementById('meta-log-airfield-list');
+                const hint = document.getElementById('meta-log-airfield-hint');
+                if (!datalist) return;
+
+                const resolvedCountry = App.resolveCountryName(App.data.meta.logCountry);
+                const options = App.missionConfig.logAirfieldsByCountry[resolvedCountry] || [];
+
+                const fragment = document.createDocumentFragment();
+                options.forEach((airfield) => {
+                    fragment.appendChild(App.createOption(airfield, airfield));
+                });
+                datalist.innerHTML = '';
+                datalist.appendChild(fragment);
+
+                if (!hint) return;
+                if (!App.data.meta.logCountry) {
+                    hint.textContent = "Sélectionnez un pays pour afficher les terrains OACI proposés.";
+                } else if (options.length) {
+                    hint.textContent = `${options.length} terrain(s) proposé(s) pour ${resolvedCountry}.`;
+                } else {
+                    hint.textContent = "Aucun terrain préconfiguré pour ce pays. Vous pouvez saisir un terrain manuellement.";
+                }
+            },
+
+            refreshMissionVisibility: () => {
+                const m = App.data.meta;
+                const isLog = m.missionType === 'LOG';
+                const isTac = m.missionType === 'TAC';
+                const isTacOperations = isTac && m.tacContext === 'OPERATIONS';
+                const isTacExercise = isTac && m.tacContext === 'EXERCICE';
+
+                const toggle = (id, visible) => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = visible ? 'block' : 'none';
+                };
+
+                toggle('log-config-block', isLog);
+                toggle('tac-config-block', isTac);
+                toggle('tac-operations-block', isTacOperations);
+                toggle('tac-exercises-block', isTacExercise);
+                toggle('meta-tac-operation-autre', isTacOperations && m.tacOperation === 'AUTRE');
+                toggle('meta-tac-exercise-autre', isTacExercise && m.tacExercise === 'AUTRE');
+            },
+
+            updateMissionType: (val) => {
+                App.data.meta.missionType = val;
+
+                if (val !== 'LOG') {
+                    App.data.meta.logCountry = "";
+                    App.data.meta.logAirfield = "";
+                }
+                if (val !== 'TAC') {
+                    App.data.meta.tacContext = "";
+                    App.data.meta.tacOperation = "";
+                    App.data.meta.tacOperationAutre = "";
+                    App.data.meta.tacExercise = "";
+                    App.data.meta.tacExerciseAutre = "";
+                }
+
+                App.refreshMissionVisibility();
+                App.renderLogAirfieldOptions();
+                App.save();
+            },
+
+            updateLogCountry: (val) => {
+                App.data.meta.logCountry = val;
+                App.renderLogAirfieldOptions();
+                App.save();
+            },
+
+            updateTacContext: (val) => {
+                App.data.meta.tacContext = val;
+
+                if (val !== 'OPERATIONS') {
+                    App.data.meta.tacOperation = "";
+                    App.data.meta.tacOperationAutre = "";
+                }
+                if (val !== 'EXERCICE') {
+                    App.data.meta.tacExercise = "";
+                    App.data.meta.tacExerciseAutre = "";
+                }
+
+                App.refreshMissionVisibility();
+                App.save();
+            },
+
+            updateTacOperation: (val) => {
+                App.data.meta.tacOperation = val;
+                if (val !== 'AUTRE') App.data.meta.tacOperationAutre = "";
+                App.refreshMissionVisibility();
+                App.save();
+            },
+
+            updateTacExercise: (val) => {
+                App.data.meta.tacExercise = val;
+                if (val !== 'AUTRE') App.data.meta.tacExerciseAutre = "";
+                App.refreshMissionVisibility();
+                App.save();
+            },
+
             init: () => {
-                // Load from storage or set defaults
+                App.setupMissionConfig();
+
+                // Load from storage
                 const saved = localStorage.getItem('aar_forge_data');
                 if (saved) {
                     try {
                         App.data = JSON.parse(saved);
-                        if (App.data && App.data.meta && Object.prototype.hasOwnProperty.call(App.data.meta, 'pj')) delete App.data.meta.pj;
                     } catch (e) { console.error("Load error", e); }
-                } else {
-                    // Set today's date
-                    App.data.meta.date = new Date().toISOString().split('T')[0];
                 }
+                App.ensureDataShape();
+                if (!App.data.meta.date) App.data.meta.date = new Date().toISOString().split('T')[0];
 
                 // Bind Input Change Listener for Import
                 document.getElementById('file-input').addEventListener('change', App.importJSON);
@@ -1680,6 +2070,7 @@
 
             save: () => {
                 localStorage.setItem('aar_forge_data', JSON.stringify(App.data));
+                App.refreshRequiredFieldHighlights();
                 App.renderPreview(); // Auto update preview on save
             },
 
@@ -1695,13 +2086,34 @@
 
             updateRank: (val) => {
                 App.data.meta.grade = val;
-                document.getElementById('meta-grade-autre').style.display = (val === 'AUTRE') ? 'block' : 'none';
+                if (val !== 'AUTRE') App.data.meta.gradeAutre = "";
+                const otherGrade = document.getElementById('meta-grade-autre');
+                if (otherGrade) {
+                    otherGrade.style.display = (val === 'AUTRE') ? 'block' : 'none';
+                    if (val !== 'AUTRE') otherGrade.value = "";
+                }
                 App.save();
             },
 
             updateUnit: (val) => {
                 App.data.meta.unite = val;
-                document.getElementById('meta-unite-autre').style.display = (val === 'AUTRE') ? 'block' : 'none';
+                if (val !== 'AUTRE') App.data.meta.uniteAutre = "";
+                const otherUnit = document.getElementById('meta-unite-autre');
+                if (otherUnit) {
+                    otherUnit.style.display = (val === 'AUTRE') ? 'block' : 'none';
+                    if (val !== 'AUTRE') otherUnit.value = "";
+                }
+                App.save();
+            },
+
+            updateFleet: (val) => {
+                App.data.meta.flotte = val;
+                if (val !== 'AUTRE') App.data.meta.flotteAutre = "";
+                const otherFleet = document.getElementById('meta-flotte-autre');
+                if (otherFleet) {
+                    otherFleet.style.display = (val === 'AUTRE') ? 'block' : 'none';
+                    if (val !== 'AUTRE') otherFleet.value = "";
+                }
                 App.save();
             },
 
@@ -1823,6 +2235,8 @@
             // --- FORM BINDING ---
             renderForm: () => {
                 const d = App.data;
+                App.renderMissionSelectors();
+
                 document.getElementById('meta-title').value = d.meta.title;
                 document.getElementById('meta-date').value = d.meta.date;
                 document.getElementById('meta-grade').value = d.meta.grade || '';
@@ -1833,6 +2247,20 @@
                 document.getElementById('meta-unite').value = d.meta.unite || '';
                 document.getElementById('meta-unite-autre').value = d.meta.uniteAutre || '';
                 document.getElementById('meta-unite-autre').style.display = (d.meta.unite === 'AUTRE') ? 'block' : 'none';
+                document.getElementById('meta-flotte').value = d.meta.flotte || '';
+                document.getElementById('meta-flotte-autre').value = d.meta.flotteAutre || '';
+                document.getElementById('meta-flotte-autre').style.display = (d.meta.flotte === 'AUTRE') ? 'block' : 'none';
+                document.getElementById('meta-mission-type').value = d.meta.missionType || '';
+                document.getElementById('meta-log-country').value = d.meta.logCountry || '';
+                document.getElementById('meta-log-airfield').value = d.meta.logAirfield || '';
+                document.getElementById('meta-tac-context').value = d.meta.tacContext || '';
+                document.getElementById('meta-tac-operation').value = d.meta.tacOperation || '';
+                document.getElementById('meta-tac-operation-autre').value = d.meta.tacOperationAutre || '';
+                document.getElementById('meta-tac-exercise').value = d.meta.tacExercise || '';
+                document.getElementById('meta-tac-exercise-autre').value = d.meta.tacExerciseAutre || '';
+                App.refreshMissionVisibility();
+                App.renderLogAirfieldOptions();
+                App.refreshRequiredFieldHighlights();
 
                 // Update Classification UI
                 document.querySelectorAll('.classif-item').forEach(el => {
@@ -1867,14 +2295,16 @@
                 const redacteurText = () => {
                     const g = d.meta.grade === 'AUTRE' ? d.meta.gradeAutre : d.meta.grade;
                     const u = d.meta.unite === 'AUTRE' ? d.meta.uniteAutre : d.meta.unite;
+                    const f = d.meta.flotte === 'AUTRE' ? d.meta.flotteAutre : d.meta.flotte;
                     const parts = [];
                     if (g) parts.push(g);
                     if (d.meta.nom) parts.push(d.meta.nom);
                     if (d.meta.prenom) parts.push(d.meta.prenom);
 
                     let text = parts.length ? parts.join(' ') : '-';
-                    if (u) {
-                        text += '<br><span style="font-weight: normal; opacity: 0.8; font-size: 0.85em;">' + u + '</span>';
+                    const unitAndFleet = [u, f].filter(Boolean).join(' | ');
+                    if (unitAndFleet) {
+                        text += '<br><span style="font-weight: normal; opacity: 0.8; font-size: 0.85em;">' + unitAndFleet + '</span>';
                     }
                     return text;
                 };
@@ -1922,10 +2352,12 @@
                     }
                 }
                 document.getElementById('prev-recos').innerHTML = recElements.length ? recElements.join('') : '<span style="opacity:0.3">Aucune recommandation saisie.</span>';
+                setHtml('prev-qwi', d.qwi?.advice || '');
             },
 
             // --- EXPORT / IMPORT ---
             exportJSON: () => {
+                if (!App.validateRequiredFields('export JSON')) return;
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(App.data, null, 2));
                 const dlAnchor = document.createElement('a');
                 dlAnchor.setAttribute("href", dataStr);
@@ -1936,6 +2368,7 @@
                 dlAnchor.remove();
             },
             sendQwiEmail: () => {
+                if (!App.validateRequiredFields('envoi QWI')) return;
                 const title = App.data.meta.title || "AAR";
                 const date = App.data.meta.date || "Unknown Date";
                 const rank = App.data.meta.grade === 'AUTRE' ? (App.data.meta.gradeAutre || "") : (App.data.meta.grade || "");
@@ -1949,6 +2382,10 @@
 
                 window.location.href = mailto;
             },
+            printReport: () => {
+                if (!App.validateRequiredFields('impression / PDF')) return;
+                window.print();
+            },
 
             importJSON: (event) => {
                 const file = event.target.files[0];
@@ -1957,7 +2394,7 @@
                 reader.onload = (e) => {
                     try {
                         App.data = JSON.parse(e.target.result);
-                        if (App.data && App.data.meta && Object.prototype.hasOwnProperty.call(App.data.meta, 'pj')) delete App.data.meta.pj;
+                        App.ensureDataShape();
                         App.save();
                         App.renderForm();
                         App.renderPreview();

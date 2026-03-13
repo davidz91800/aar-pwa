@@ -1,9 +1,10 @@
-﻿const CACHE_NAME = "aar-shell-v2";
+﻿const CACHE_NAME = "aar-shell-v3";
 const SHELL_URL = "./AAR.html";
 const CORE_ASSETS = [SHELL_URL];
 const OPTIONAL_ASSETS = [
   "./",
   "./manifest.webmanifest",
+  "./mission-config.js",
   "./icons/icon-192.svg",
   "./icons/icon-512.svg"
 ];
@@ -97,4 +98,6 @@ self.addEventListener("fetch", (event) => {
     }
   })());
 });
+
+
 

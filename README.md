@@ -5,6 +5,7 @@ PWA offline basee sur `AAR.html`.
 ## Contenu
 
 - `AAR.html` (application principale)
+- `mission-config.js` (listes LOG/TAC modifiables par l'admin)
 - `manifest.webmanifest`
 - `sw.js` (service worker cache shell)
 - `icons/icon-192.svg`, `icons/icon-512.svg`
