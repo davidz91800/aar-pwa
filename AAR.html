@@ -1470,32 +1470,24 @@
                 <div id="log-config-block" style="display:none;">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>PAYS (recherche)</label>
-                            <div class="combo-box">
-                                <input type="text" id="meta-log-country" placeholder="Tapez pour rechercher un pays..."
-                                    autocomplete="off" oninput="App.handleComboInput('log-country', this.value)"
-                                    onfocus="App.openCombo('log-country')"
-                                    onkeydown="App.handleComboKeydown(event, 'log-country')"
-                                    onblur="App.scheduleCloseCombo('log-country')">
-                                <button type="button" class="combo-toggle" aria-label="Afficher les pays"
-                                    onmousedown="event.preventDefault(); App.cancelScheduledClose('log-country')"
-                                    onclick="App.toggleCombo('log-country')">▾</button>
-                                <div id="meta-log-country-menu" class="combo-menu"></div>
-                            </div>
+                            <label>PAYS</label>
+                            <input type="search" id="meta-log-country-search" placeholder="Rechercher un pays..."
+                                oninput="App.filterLogCountries(this.value)">
+                            <select id="meta-log-country" onchange="App.updateLogCountrySelection(this.value)">
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                            <input type="text" id="meta-log-country-autre" placeholder="Précisez le pays..."
+                                style="display:none; margin-top: 8px;" oninput="App.updateLogCountryAutre(this.value)">
                         </div>
                         <div class="form-group">
                             <label>Terrain OACI</label>
-                            <div class="combo-box">
-                                <input type="text" id="meta-log-airfield" placeholder="Ex: LFOE Evreux"
-                                    autocomplete="off" oninput="App.handleComboInput('log-airfield', this.value)"
-                                    onfocus="App.openCombo('log-airfield')"
-                                    onkeydown="App.handleComboKeydown(event, 'log-airfield')"
-                                    onblur="App.scheduleCloseCombo('log-airfield')">
-                                <button type="button" class="combo-toggle" aria-label="Afficher les terrains"
-                                    onmousedown="event.preventDefault(); App.cancelScheduledClose('log-airfield')"
-                                    onclick="App.toggleCombo('log-airfield')">▾</button>
-                                <div id="meta-log-airfield-menu" class="combo-menu"></div>
-                            </div>
+                            <input type="search" id="meta-log-airfield-search" placeholder="Rechercher un terrain OACI..."
+                                oninput="App.filterLogAirfields(this.value)">
+                            <select id="meta-log-airfield" onchange="App.updateLogAirfieldSelection(this.value)">
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                            <input type="text" id="meta-log-airfield-autre" placeholder="Précisez le terrain OACI..."
+                                style="display:none; margin-top: 8px;" oninput="App.updateLogAirfieldAutre(this.value)">
                             <div id="meta-log-airfield-hint"
                                 style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"></div>
                         </div>
@@ -2055,7 +2047,9 @@
             classification: "NON PROTÉGÉ",
             missionType: "",
             logCountry: "",
+            logCountryAutre: "",
             logAirfield: "",
+            logAirfieldAutre: "",
             tacContext: "",
             tacOperation: "",
             tacOperationAutre: "",
@@ -2104,9 +2098,8 @@
                 currentCategory: 'DOCTRINE',
                 currentW6Tab: 0,
                 currentDoreseTab: 0,
-                comboState: {},
-                comboCloseTimers: {},
-                comboEventsBound: false
+                logCountrySearch: "",
+                logAirfieldSearch: ""
             },
 
             normalizeKey: (value) => {
@@ -2231,6 +2224,18 @@
                 App.data.qwi = { ...QWI_DEFAULTS, ...(App.data.qwi || {}) };
 
                 if (Object.prototype.hasOwnProperty.call(App.data.meta, 'pj')) delete App.data.meta.pj;
+
+                const knownCountries = new Set(App.missionConfig.allCountries || []);
+                if (App.data.meta.logCountry && App.data.meta.logCountry !== 'AUTRE' && !knownCountries.has(App.data.meta.logCountry)) {
+                    if (!App.data.meta.logCountryAutre) App.data.meta.logCountryAutre = App.data.meta.logCountry;
+                    App.data.meta.logCountry = 'AUTRE';
+                }
+
+                const knownAirfields = new Set(App.getLogAirfieldsForCurrentCountry());
+                if (App.data.meta.logAirfield && App.data.meta.logAirfield !== 'AUTRE' && knownAirfields.size && !knownAirfields.has(App.data.meta.logAirfield)) {
+                    if (!App.data.meta.logAirfieldAutre) App.data.meta.logAirfieldAutre = App.data.meta.logAirfield;
+                    App.data.meta.logAirfield = 'AUTRE';
+                }
             },
 
             createOption: (value, label) => {
@@ -2260,225 +2265,88 @@
                 if (allowed.includes(currentValue)) select.value = currentValue;
             },
 
-            escapeHtml: (value) => {
-                return (value || '')
-                    .toString()
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
+            getEffectiveLogCountry: () => {
+                const m = App.data.meta;
+                return m.logCountry === 'AUTRE' ? (m.logCountryAutre || '') : (m.logCountry || '');
             },
 
-            getComboConfig: (key) => {
-                if (key === 'log-country') {
-                    return {
-                        inputId: 'meta-log-country',
-                        menuId: 'meta-log-country-menu',
-                        emptyText: 'Aucun pays trouvé.',
-                        getOptions: () => App.missionConfig.allCountries || [],
-                        onInput: (value) => App.updateLogCountry(value),
-                        onSelect: (value) => App.selectLogCountry(value)
-                    };
-                }
+            filterValues: (values, query) => {
+                const normalized = App.normalizeKey(query || '');
+                if (!normalized) return [...values];
 
-                if (key === 'log-airfield') {
-                    return {
-                        inputId: 'meta-log-airfield',
-                        menuId: 'meta-log-airfield-menu',
-                        emptyText: 'Aucun terrain OACI trouvé.',
-                        getOptions: () => App.getLogAirfieldsForCurrentCountry(),
-                        onInput: (value) => App.update('meta.logAirfield', value),
-                        onSelect: (value) => App.selectLogAirfield(value)
-                    };
-                }
-
-                return null;
-            },
-
-            getComboState: (key) => {
-                if (!App.ui.comboState) App.ui.comboState = {};
-                if (!App.ui.comboState[key]) {
-                    App.ui.comboState[key] = { filtered: [], activeIndex: -1 };
-                }
-                return App.ui.comboState[key];
-            },
-
-            isComboOpen: (key) => {
-                const config = App.getComboConfig(key);
-                if (!config) return false;
-                const menu = document.getElementById(config.menuId);
-                return Boolean(menu && menu.classList.contains('open'));
-            },
-
-            openCombo: (key) => {
-                App.cancelScheduledClose(key);
-                App.closeOtherCombos(key);
-                App.renderComboMenu(key, true);
-            },
-
-            closeCombo: (key) => {
-                const config = App.getComboConfig(key);
-                if (!config) return;
-                const menu = document.getElementById(config.menuId);
-                if (menu) menu.classList.remove('open');
-                const state = App.getComboState(key);
-                state.activeIndex = -1;
-            },
-
-            closeOtherCombos: (exceptKey) => {
-                ['log-country', 'log-airfield'].forEach((key) => {
-                    if (key !== exceptKey) App.closeCombo(key);
+                const startsWith = [];
+                const includes = [];
+                values.forEach((value) => {
+                    const norm = App.normalizeKey(value);
+                    if (norm.startsWith(normalized)) startsWith.push(value);
+                    else if (norm.includes(normalized)) includes.push(value);
                 });
+                return [...startsWith, ...includes];
             },
 
-            scheduleCloseCombo: (key) => {
-                if (!App.ui.comboCloseTimers) App.ui.comboCloseTimers = {};
-                App.cancelScheduledClose(key);
-                App.ui.comboCloseTimers[key] = setTimeout(() => App.closeCombo(key), 120);
-            },
+            renderLogCountrySelect: () => {
+                const select = document.getElementById('meta-log-country');
+                const otherInput = document.getElementById('meta-log-country-autre');
+                if (!select) return;
 
-            cancelScheduledClose: (key) => {
-                if (!App.ui.comboCloseTimers || !App.ui.comboCloseTimers[key]) return;
-                clearTimeout(App.ui.comboCloseTimers[key]);
-                delete App.ui.comboCloseTimers[key];
-            },
+                const current = App.data.meta.logCountry || '';
+                const baseCountries = App.missionConfig.allCountries || [];
+                let countries = App.filterValues(baseCountries, App.ui.logCountrySearch);
+                if (current && current !== 'AUTRE' && !countries.includes(current)) countries = [current, ...countries];
 
-            toggleCombo: (key) => {
-                const config = App.getComboConfig(key);
-                if (!config) return;
-                const input = document.getElementById(config.inputId);
-                if (App.isComboOpen(key)) {
-                    App.closeCombo(key);
-                } else {
-                    if (input) input.focus();
-                    App.openCombo(key);
-                }
-            },
-
-            getFilteredComboOptions: (key) => {
-                const config = App.getComboConfig(key);
-                if (!config) return [];
-                const options = config.getOptions().filter(Boolean);
-                const input = document.getElementById(config.inputId);
-                const query = input ? input.value : '';
-                const normalized = App.normalizeKey(query);
-                let filtered = options;
-                if (normalized) {
-                    const startsWith = [];
-                    const includes = [];
-                    options.forEach((option) => {
-                        const normalizedOption = App.normalizeKey(option);
-                        if (normalizedOption.startsWith(normalized)) {
-                            startsWith.push(option);
-                        } else if (normalizedOption.includes(normalized)) {
-                            includes.push(option);
-                        }
-                    });
-                    filtered = [...startsWith, ...includes];
-                }
-                return filtered.slice(0, 150);
-            },
-
-            renderComboMenu: (key, open = false) => {
-                const config = App.getComboConfig(key);
-                if (!config) return;
-                const menu = document.getElementById(config.menuId);
-                if (!menu) return;
-
-                const state = App.getComboState(key);
-                state.filtered = App.getFilteredComboOptions(key);
-                if (state.activeIndex >= state.filtered.length) state.activeIndex = -1;
-
-                if (!state.filtered.length) {
-                    menu.innerHTML = `<div class="combo-empty">${App.escapeHtml(config.emptyText)}</div>`;
-                } else {
-                    menu.innerHTML = state.filtered.map((value, index) => {
-                        const activeClass = index === state.activeIndex ? ' active' : '';
-                        return `<button type="button" class="combo-option${activeClass}" data-key="${key}" data-index="${index}" data-value="${App.escapeHtml(value)}">${App.escapeHtml(value)}</button>`;
-                    }).join('');
-
-                    menu.querySelectorAll('.combo-option').forEach((btn) => {
-                        btn.addEventListener('mousedown', (event) => {
-                            event.preventDefault();
-                            const idx = Number(btn.dataset.index);
-                            const option = state.filtered[idx];
-                            if (option) App.selectComboOption(key, option);
-                        });
-                    });
-                }
-
-                if (open) menu.classList.add('open');
-            },
-
-            selectComboOption: (key, value) => {
-                const config = App.getComboConfig(key);
-                if (!config) return;
-                config.onSelect(value);
-                App.closeCombo(key);
-                const input = document.getElementById(config.inputId);
-                if (input) input.focus();
-            },
-
-            handleComboInput: (key, value) => {
-                const config = App.getComboConfig(key);
-                if (!config) return;
-                config.onInput(value);
-                App.renderComboMenu(key, true);
-            },
-
-            handleComboKeydown: (event, key) => {
-                const state = App.getComboState(key);
-                const keyName = event.key;
-
-                if (keyName === 'Escape') {
-                    App.closeCombo(key);
-                    return;
-                }
-
-                if (keyName === 'Tab') {
-                    App.closeCombo(key);
-                    return;
-                }
-
-                if (keyName === 'ArrowDown' || keyName === 'ArrowUp') {
-                    event.preventDefault();
-                    App.openCombo(key);
-                    if (!state.filtered.length) return;
-
-                    if (keyName === 'ArrowDown') {
-                        state.activeIndex = Math.min(state.filtered.length - 1, state.activeIndex + 1);
-                    } else {
-                        state.activeIndex = Math.max(0, state.activeIndex - 1);
-                    }
-                    App.renderComboMenu(key, true);
-                    return;
-                }
-
-                if (keyName === 'Enter') {
-                    if (!App.isComboOpen(key)) return;
-                    event.preventDefault();
-                    if (state.activeIndex >= 0 && state.activeIndex < state.filtered.length) {
-                        App.selectComboOption(key, state.filtered[state.activeIndex]);
-                    } else if (state.filtered.length === 1) {
-                        App.selectComboOption(key, state.filtered[0]);
-                    }
-                }
-            },
-
-            initComboInteractions: () => {
-                if (App.ui.comboEventsBound) return;
-                App.ui.comboEventsBound = true;
-                document.addEventListener('pointerdown', (event) => {
-                    if (!event.target.closest('.combo-box')) {
-                        App.closeOtherCombos(null);
-                    }
+                select.innerHTML = '';
+                select.appendChild(App.createOption('', '-- Sélectionner --'));
+                select.appendChild(App.createOption('AUTRE', 'AUTRE'));
+                countries.forEach((country) => {
+                    if (country !== 'AUTRE') select.appendChild(App.createOption(country, country));
                 });
+                select.value = current;
+
+                if (otherInput) {
+                    otherInput.style.display = current === 'AUTRE' ? 'block' : 'none';
+                    if (current !== 'AUTRE') otherInput.value = '';
+                }
+            },
+
+            renderLogAirfieldSelect: () => {
+                const select = document.getElementById('meta-log-airfield');
+                const otherInput = document.getElementById('meta-log-airfield-autre');
+                if (!select) return;
+
+                const current = App.data.meta.logAirfield || '';
+                const baseAirfields = App.getLogAirfieldsForCurrentCountry();
+                let airfields = App.filterValues(baseAirfields, App.ui.logAirfieldSearch);
+                if (current && current !== 'AUTRE' && !airfields.includes(current)) airfields = [current, ...airfields];
+
+                select.innerHTML = '';
+                select.appendChild(App.createOption('', '-- Sélectionner --'));
+                select.appendChild(App.createOption('AUTRE', 'AUTRE'));
+                airfields.forEach((airfield) => {
+                    if (airfield !== 'AUTRE') select.appendChild(App.createOption(airfield, airfield));
+                });
+                select.value = current;
+
+                if (otherInput) {
+                    otherInput.style.display = current === 'AUTRE' ? 'block' : 'none';
+                    if (current !== 'AUTRE') otherInput.value = '';
+                }
+            },
+
+            filterLogCountries: (query) => {
+                App.ui.logCountrySearch = query || '';
+                App.renderLogCountrySelect();
+            },
+
+            filterLogAirfields: (query) => {
+                App.ui.logAirfieldSearch = query || '';
+                App.renderLogAirfieldSelect();
             },
 
             renderMissionSelectors: () => {
                 App.fillSelectOptions('meta-tac-operation', App.missionConfig.tacOperations, true);
                 App.fillSelectOptions('meta-tac-exercise', App.missionConfig.tacExercises, true);
+                App.renderLogCountrySelect();
+                App.renderLogAirfieldSelect();
             },
 
             resolveCountryName: (inputCountry) => {
@@ -2490,18 +2358,19 @@
             },
 
             getLogAirfieldsForCurrentCountry: () => {
-                const resolvedCountry = App.resolveCountryName(App.data.meta.logCountry);
+                const resolvedCountry = App.resolveCountryName(App.getEffectiveLogCountry());
                 return App.missionConfig.logAirfieldsByCountry[resolvedCountry] || [];
             },
 
             renderLogAirfieldOptions: () => {
                 const hint = document.getElementById('meta-log-airfield-hint');
 
-                const resolvedCountry = App.resolveCountryName(App.data.meta.logCountry);
+                const effectiveCountry = App.getEffectiveLogCountry();
+                const resolvedCountry = App.resolveCountryName(effectiveCountry);
                 const options = App.getLogAirfieldsForCurrentCountry();
 
                 if (hint) {
-                    if (!App.data.meta.logCountry) {
+                    if (!effectiveCountry) {
                         hint.textContent = "Sélectionnez un pays pour afficher les terrains OACI proposés.";
                     } else if (options.length) {
                         hint.textContent = `${options.length} terrain(s) proposé(s) pour ${resolvedCountry}.`;
@@ -2509,8 +2378,6 @@
                         hint.textContent = "Aucun terrain préconfiguré pour ce pays. Vous pouvez saisir un terrain manuellement.";
                     }
                 }
-
-                App.renderComboMenu('log-airfield', App.isComboOpen('log-airfield'));
             },
 
             refreshMissionVisibility: () => {
@@ -2529,6 +2396,8 @@
                 toggle('tac-config-block', isTac);
                 toggle('tac-operations-block', isTacOperations);
                 toggle('tac-exercises-block', isTacExercise);
+                toggle('meta-log-country-autre', isLog && m.logCountry === 'AUTRE');
+                toggle('meta-log-airfield-autre', isLog && m.logAirfield === 'AUTRE');
                 toggle('meta-tac-operation-autre', isTacOperations && m.tacOperation === 'AUTRE');
                 toggle('meta-tac-exercise-autre', isTacExercise && m.tacExercise === 'AUTRE');
             },
@@ -2538,13 +2407,15 @@
 
                 if (val !== 'LOG') {
                     App.data.meta.logCountry = "";
+                    App.data.meta.logCountryAutre = "";
                     App.data.meta.logAirfield = "";
-                    const countryInput = document.getElementById('meta-log-country');
-                    const airfieldInput = document.getElementById('meta-log-airfield');
-                    if (countryInput) countryInput.value = "";
-                    if (airfieldInput) airfieldInput.value = "";
-                    App.closeCombo('log-country');
-                    App.closeCombo('log-airfield');
+                    App.data.meta.logAirfieldAutre = "";
+                    App.ui.logCountrySearch = "";
+                    App.ui.logAirfieldSearch = "";
+                    const countrySearch = document.getElementById('meta-log-country-search');
+                    const airfieldSearch = document.getElementById('meta-log-airfield-search');
+                    if (countrySearch) countrySearch.value = "";
+                    if (airfieldSearch) airfieldSearch.value = "";
                 }
                 if (val !== 'TAC') {
                     App.data.meta.tacContext = "";
@@ -2555,40 +2426,54 @@
                 }
 
                 App.refreshMissionVisibility();
+                App.renderLogCountrySelect();
+                App.renderLogAirfieldSelect();
                 App.renderLogAirfieldOptions();
                 App.save();
             },
 
-            selectLogCountry: (value) => {
-                const previousCountry = App.resolveCountryName(App.data.meta.logCountry);
+            updateLogCountrySelection: (value) => {
+                const previousCountry = App.resolveCountryName(App.getEffectiveLogCountry());
                 App.data.meta.logCountry = value;
-                const resolvedCountry = App.resolveCountryName(value);
-                if (previousCountry !== resolvedCountry) {
+                if (value !== 'AUTRE') App.data.meta.logCountryAutre = "";
+                App.ui.logCountrySearch = "";
+                const countrySearch = document.getElementById('meta-log-country-search');
+                if (countrySearch) countrySearch.value = "";
+
+                const nextCountryRaw = value === 'AUTRE' ? App.data.meta.logCountryAutre : value;
+                const nextCountry = App.resolveCountryName(nextCountryRaw);
+                if (previousCountry !== nextCountry) {
                     App.data.meta.logAirfield = "";
-                    const airfieldInput = document.getElementById('meta-log-airfield');
-                    if (airfieldInput) airfieldInput.value = "";
+                    App.data.meta.logAirfieldAutre = "";
+                    App.ui.logAirfieldSearch = "";
+                    const airfieldSearch = document.getElementById('meta-log-airfield-search');
+                    if (airfieldSearch) airfieldSearch.value = "";
                 }
-                const countryInput = document.getElementById('meta-log-country');
-                if (countryInput) countryInput.value = value;
+
+                App.renderLogCountrySelect();
+                App.renderLogAirfieldSelect();
                 App.renderLogAirfieldOptions();
                 App.save();
             },
 
-            selectLogAirfield: (value) => {
+            updateLogAirfieldSelection: (value) => {
                 App.data.meta.logAirfield = value;
-                const airfieldInput = document.getElementById('meta-log-airfield');
-                if (airfieldInput) airfieldInput.value = value;
+                if (value !== 'AUTRE') App.data.meta.logAirfieldAutre = "";
+                App.ui.logAirfieldSearch = "";
+                const airfieldSearch = document.getElementById('meta-log-airfield-search');
+                if (airfieldSearch) airfieldSearch.value = "";
+                App.renderLogAirfieldSelect();
                 App.save();
             },
 
-            updateLogCountry: (val) => {
-                App.data.meta.logCountry = val;
-                if (!App.isFilled(val)) {
-                    App.data.meta.logAirfield = "";
-                    const airfieldInput = document.getElementById('meta-log-airfield');
-                    if (airfieldInput) airfieldInput.value = "";
-                }
+            updateLogCountryAutre: (value) => {
+                App.data.meta.logCountryAutre = value;
                 App.renderLogAirfieldOptions();
+                App.save();
+            },
+
+            updateLogAirfieldAutre: (value) => {
+                App.data.meta.logAirfieldAutre = value;
                 App.save();
             },
 
@@ -2624,7 +2509,6 @@
 
             init: () => {
                 App.setupMissionConfig();
-                App.initComboInteractions();
 
                 // Load from storage
                 const saved = localStorage.getItem('aar_forge_data');
@@ -2826,17 +2710,21 @@
                 document.getElementById('meta-flotte-autre').value = d.meta.flotteAutre || '';
                 document.getElementById('meta-flotte-autre').style.display = (d.meta.flotte === 'AUTRE') ? 'block' : 'none';
                 document.getElementById('meta-mission-type').value = d.meta.missionType || '';
+                document.getElementById('meta-log-country-search').value = App.ui.logCountrySearch || '';
+                document.getElementById('meta-log-airfield-search').value = App.ui.logAirfieldSearch || '';
                 document.getElementById('meta-log-country').value = d.meta.logCountry || '';
+                document.getElementById('meta-log-country-autre').value = d.meta.logCountryAutre || '';
                 document.getElementById('meta-log-airfield').value = d.meta.logAirfield || '';
+                document.getElementById('meta-log-airfield-autre').value = d.meta.logAirfieldAutre || '';
                 document.getElementById('meta-tac-context').value = d.meta.tacContext || '';
                 document.getElementById('meta-tac-operation').value = d.meta.tacOperation || '';
                 document.getElementById('meta-tac-operation-autre').value = d.meta.tacOperationAutre || '';
                 document.getElementById('meta-tac-exercise').value = d.meta.tacExercise || '';
                 document.getElementById('meta-tac-exercise-autre').value = d.meta.tacExerciseAutre || '';
                 App.refreshMissionVisibility();
+                App.renderLogCountrySelect();
+                App.renderLogAirfieldSelect();
                 App.renderLogAirfieldOptions();
-                App.renderComboMenu('log-country', false);
-                App.renderComboMenu('log-airfield', false);
                 App.refreshRequiredFieldHighlights();
 
                 // Update Classification UI
