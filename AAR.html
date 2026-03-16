@@ -2903,6 +2903,81 @@
         });
     </script>
     <script>
+        (function externalQwiEditorBridge() {
+            const params = new URLSearchParams(window.location.search);
+            const isExternalEditor = params.get('externalEditor') === '1';
+            const session = (params.get('session') || '').trim();
+            if (!isExternalEditor || !session) return;
+
+            const requestKey = `aar_qwi_editor_request:${session}`;
+            let request = null;
+            try {
+                const raw = localStorage.getItem(requestKey);
+                request = raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('QWI external request parse failed:', error);
+            }
+
+            if (request && request.aar && typeof request.aar === 'object') {
+                App.data = request.aar;
+            } else {
+                App.data = {};
+            }
+            App.ensureDataShape();
+            if (!App.data.meta.date) App.data.meta.date = new Date().toISOString().split('T')[0];
+            App.save();
+            App.renderForm();
+            App.renderPreview();
+
+            document.title = 'AAR Editor QWI';
+
+            const bar = document.createElement('div');
+            bar.style.position = 'fixed';
+            bar.style.right = '16px';
+            bar.style.bottom = '16px';
+            bar.style.display = 'flex';
+            bar.style.gap = '8px';
+            bar.style.zIndex = '3000';
+            bar.innerHTML = `
+                <button id="ext-qwi-save" class="btn btn-primary" style="padding: 10px 14px;">Enregistrer vers HUB QWI</button>
+                <button id="ext-qwi-close" class="btn" style="padding: 10px 14px;">Fermer</button>
+            `;
+            document.body.appendChild(bar);
+
+            const sendToOpener = () => {
+                App.ensureDataShape();
+                const payload = JSON.parse(JSON.stringify(App.data || {}));
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        type: 'aar-qwi-save',
+                        session,
+                        aar: payload
+                    }, '*');
+                    return true;
+                }
+                return false;
+            };
+
+            const saveBtn = document.getElementById('ext-qwi-save');
+            const closeBtn = document.getElementById('ext-qwi-close');
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    if (sendToOpener()) {
+                        alert('AAR envoye au HUB QWI.');
+                        window.close();
+                        return;
+                    }
+                    alert('Impossible de contacter la fenetre HUB QWI (popup fermee ?).');
+                });
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => window.close());
+            }
+        })();
+    </script>
+    <script>
         (function registerPwa() {
             if (!('serviceWorker' in navigator)) return;
 
