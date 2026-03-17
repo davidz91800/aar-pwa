@@ -38,7 +38,8 @@ Quand une modification touche le formulaire AAR, livrer dans le meme changement:
   - Un push GitHub met a jour les donnees consommees par les hubs.
 - Toute evolution du schema AAR doit rester compatible avec ce pipeline e-mail -> Drive -> GitHub -> hubs.
 - Catalogue hashtags dynamique:
-  - Le formulaire peut lire un catalogue distant Apps Script (`AARMissionConfig.appsScript`) via `action=getHashtags`.
+  - Le formulaire lit un catalogue mission distant Apps Script (`AARMissionConfig.appsScript`) via `action=getCatalog`.
+  - Ce catalogue couvre: `hashtags`, `countries`, `oaci`, `operations`, `exercises`.
   - Ce catalogue est fusionne avec `mission-config.js` et le cache local.
 - Politique credentials:
   - Projet Google Cloud recommande: `RETEX` (unique projet).
