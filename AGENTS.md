@@ -23,6 +23,14 @@ Quand une modification touche le formulaire AAR, livrer dans le meme changement:
 4. MAJ copie formulaire deploiement `AAR READER HUB QWI/aar-pwa/`
 5. Verification manuelle du flux d'edition QWI (ouvrir, modifier, enregistrer retour).
 
+## Regles d'encodage (obligatoires)
+- Encodage unique: `UTF-8` pour tous les fichiers texte.
+- En PowerShell, toujours preciser l'encodage en ecriture (`-Encoding UTF8`).
+- Controle anti-mojibake avant push sur les fichiers modifies:
+  - rechercher `Ã|Â|â€¦|â€”|ðŸ`
+  - corriger toute chaine UI corrompue (ex: `opÃ©ration`).
+- Toute correction de libelle utilisateur dans le formulaire doit etre repercutee dans les hubs lecteurs.
+
 ## Contexte d'exploitation (a conserver)
 - Flux operationnel actuel:
   - Un e-mail AAR arrive sur `david.zemmour3@gmail.com`.
