@@ -1,8 +1,13 @@
 ﻿// Configuration des choix mission (modifiable par admin).
-// - tacOperations: ajoutez ici les operations proposees aux utilisateurs.
-// - tacExercises: ajoutez/supprimez des types d'exercice TAC.
-// - hashtags: catalogue initial de hashtags proposes dans le formulaire.
-// - logAirfieldsByCountry: liste des terrains OACI par pays (format "ICAO Nom").
+// Architecture 2026-03:
+// - Les listes dynamiques (hashtags/pays/OACI/operations/exercices) viennent en priorite du backend Apps Script unique.
+// - AUTOMATION 1 (Web App API): getCatalog/listAars/upsert/delete/setCatalog.
+// - AUTOMATION 2 (Email -> Drive): runIngestEmailsToDrive (trigger).
+// - Ce fichier reste une base locale + fallback.
+// - Le push GitHub des JSON n'est plus requis pour remonter les nouveaux AAR.
+// Champs cles:
+// - appsScript.webAppUrl / appsScript.accessKey: doivent matcher le meme backend que les 2 HUB.
+// - tacOperations / tacExercises / hashtags / logAirfieldsByCountry: socle local, fusionne avec le catalogue distant.
 window.AARMissionConfig = {
   "allCountries": [
     "Afghanistan",
@@ -266,11 +271,11 @@ window.AARMissionConfig = {
     "ETAP-C Multiple Ship"
   ],
   "appsScript": {
-    "webAppUrl": "https://script.google.com/macros/s/AKfycbzAB36XlBoE5vo1fSfxeMkn05r6FrUlFkEw8iAxiEaTsj1maU82c4d9GgB7W6p72rOPSg/exec",
+    "webAppUrl": "https://script.google.com/macros/s/AKfycbyR4B_bo7J7mHPE-oEvjVay3xx8-5tmiOex3TfTWr4V3a1xlCmZpQer8dy6dKJn3c9P/exec",
     "accessKey": "AAR-READER-HUB-QWI"
   },
   "hashtags": [
-    "#RETEX"
+    "#SmokeAndFumes"
   ],
   "logAirfieldsByCountry": {
     "Afghanistan": [

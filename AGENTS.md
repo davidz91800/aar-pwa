@@ -34,9 +34,9 @@ Quand une modification touche le formulaire AAR, livrer dans le meme changement:
 ## Contexte d'exploitation (a conserver)
 - Flux operationnel actuel:
   - Un e-mail AAR arrive sur `david.zemmour3@gmail.com`.
-  - Une automatisation extrait le JSON de l'e-mail et l'ecrit dans le dossier Google Drive des JSON.
-  - Un push GitHub met a jour les donnees consommees par les hubs.
-- Toute evolution du schema AAR doit rester compatible avec ce pipeline e-mail -> Drive -> GitHub -> hubs.
+  - Une automatisation Apps Script extrait le JSON de l'e-mail et l'ecrit dans le dossier Google Drive des JSON.
+  - Les hubs lisent directement via Apps Script (`action=listAars`) sans push GitHub des donnees en nominal.
+- Toute evolution du schema AAR doit rester compatible avec ce pipeline e-mail -> Apps Script -> Drive -> hubs.
 - Catalogue hashtags dynamique:
   - Le formulaire lit un catalogue mission distant Apps Script (`AARMissionConfig.appsScript`) via `action=getCatalog`.
   - Ce catalogue couvre: `hashtags`, `countries`, `oaci`, `operations`, `exercises`.
@@ -45,3 +45,4 @@ Quand une modification touche le formulaire AAR, livrer dans le meme changement:
   - Projet Google Cloud recommande: `RETEX` (unique projet).
   - Cle API frontend (hub) separee de la cle API automatisation.
   - Edition QWI: necessite un OAuth Client ID Web (pas seulement une cle API).
+  - `AAR_ACCESS_KEY` doit rester identique dans `mission-config.js` et les 2 `config.js` des hubs.
