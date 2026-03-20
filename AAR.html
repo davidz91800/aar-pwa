@@ -1832,21 +1832,22 @@
 
     <main>
         <nav class="sidebar">
-            <div class="nav-item active" onclick="App.nav(0)"><span>⚙️</span> 1. CONFIGURATION</div>
-            <div class="nav-item" onclick="App.nav(1)"><span>📝</span> 2. FAITS</div>
-            <div class="nav-item" onclick="App.nav(2)"><span>🔬</span> 3. ANALYSE</div>
-            <div class="nav-item" onclick="App.nav(3)"><span>🎯</span> 4. RECOMMANDATIONS</div>
+            <div class="nav-item active" data-tab="0" onclick="App.nav(0)"><span>⚙️</span> 0. CONFIGURATION</div>
+            <div class="nav-item" data-tab="1" onclick="App.nav(1)"><span>📝</span> 1. FAITS</div>
+            <div class="nav-item" data-tab="2" onclick="App.nav(2)"><span>🔬</span> 2. ANALYSE</div>
+            <div class="nav-item" data-tab="3" onclick="App.nav(3)"><span>🎯</span> 3. RECOMMANDATIONS</div>
+            <div id="nav-qwi" class="nav-item" data-tab="4" onclick="App.nav(4)" style="display: none;"><span>🧭</span> 4. AVIS QWI / WEAPONS SCHOOL</div>
             <div class="nav-item nav-workflow-link" onclick="WorkflowGuide.open()"
                 title="Afficher le workflow complet création, validation, diffusion">
                 <span>🧭</span> Workflow AAR
             </div>
-            <div class="nav-item nav-preview-link" onclick="App.nav(4)">
+            <div class="nav-item nav-preview-link" data-tab="5" onclick="App.nav(5)">
                 <span>👁️</span> VISUALISATION / PDF
             </div>
         </nav>
 
         <div id="view-header" class="content-pane active">
-            <h2 style="margin-bottom: 1.5rem;">1. CONFIGURATION</h2>
+            <h2 style="margin-bottom: 1.5rem;">0. CONFIGURATION</h2>
 
             <div class="form-group">
                 <div class="classif-selector">
@@ -2077,7 +2078,7 @@
                     style="overflow-y: auto; max-height: calc(var(--app-height) - 120px); padding-bottom: 100px; padding-top: 0;">
             <div
                 style="position: sticky; top: 0; background: var(--bg-main); z-index: 10; padding-bottom: 1rem; padding-top: 2rem;">
-                <h2 style="margin-bottom: 0.5rem;">2. FAITS</h2>
+                <h2 style="margin-bottom: 0.5rem;">1. FAITS</h2>
                 <div class="w6-tabs">
                     <div id="tab-what" class="w6-tab" onclick="App.insertFactsHeading('WHAT?', 'what')">WHAT?</div>
                     <div id="tab-why" class="w6-tab" onclick="App.insertFactsHeading('WHY?', 'why')">WHY?</div>
@@ -2113,7 +2114,7 @@
         </div>
 
         <div id="view-analysis" class="content-pane">
-            <h2 style="margin-bottom: 1.5rem;">3. ANALYSE</h2>
+            <h2 style="margin-bottom: 1.5rem;">2. ANALYSE</h2>
             <div class="card" style="border-left: 4px solid var(--warning);">
                 <div class="card-header"
                     style="color: var(--warning); text-transform: none; font-size: 0.85rem; line-height: 1.4;">
@@ -2145,7 +2146,7 @@
                     style="overflow-y: auto; max-height: calc(var(--app-height) - 120px); padding-bottom: 100px; padding-top: 0;">
             <div
                 style="position: sticky; top: 0; background: var(--bg-main); z-index: 10; padding-bottom: 1rem; padding-top: 2rem;">
-                <h2 style="margin-bottom: 0.5rem;">4. RECOMMANDATIONS</h2>
+                <h2 style="margin-bottom: 0.5rem;">3. RECOMMANDATIONS</h2>
                 <div class="dorese-tabs">
                     <div id="tab-doctrine" class="dorese-tab" onclick="App.scrollToDorese('section-doctrine')">
                         <span class="letter">D</span> <span class="label">Doctrine</span>
@@ -2318,6 +2319,36 @@
             </div>
         </div>
 
+        <div id="view-qwi" class="content-pane"
+            style="overflow-y: auto; max-height: calc(var(--app-height) - 120px); padding-bottom: 100px; padding-top: 0;">
+            <div
+                style="position: sticky; top: 0; background: var(--bg-main); z-index: 10; padding-bottom: 1rem; padding-top: 2rem;">
+                <h2 style="margin-bottom: 0.5rem;">4. AVIS QWI / WEAPONS SCHOOL</h2>
+            </div>
+            <div id="section-qwi" class="dorese-section card" style="padding: 1rem;">
+                <div class="w6-label">AVIS QWI / WEAPONS SCHOOL</div>
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <button class="editor-btn btn-bold" onclick="App.exec('bold')" title="Bold">B</button>
+                        <button class="editor-btn btn-italic" onclick="App.exec('italic')" title="Italic">I</button>
+                        <button class="editor-btn btn-underline" onclick="App.exec('underline')"
+                            title="Underline">U</button>
+                        <div class="toolbar-sep"></div>
+                        <button class="editor-btn btn-h" onclick="App.exec('formatBlock', 'h1')">H1</button>
+                        <button class="editor-btn btn-h" onclick="App.exec('formatBlock', 'h2')">H2</button>
+                        <button class="editor-btn btn-h" onclick="App.exec('formatBlock', 'h3')">H3</button>
+                        <button class="editor-btn btn-h" onclick="App.exec('formatBlock', 'p')"
+                            title="Paragraphe">P</button>
+                        <div class="toolbar-sep"></div>
+                        <button class="editor-btn btn-list" onclick="App.exec('insertUnorderedList')"
+                            title="Bullet List">• List</button>
+                    </div>
+                    <div id="qwi-advice" class="editor-content" contenteditable="true"
+                        oninput="App.update('qwi.advice', this.innerHTML)"></div>
+                </div>
+            </div>
+        </div>
+
         <div id="view-preview" class="content-pane" style="max-width: none; padding: 0;">
             <div class="preview-desk-container">
                 <table class="print-container">
@@ -2391,8 +2422,12 @@
                                         <div class="section-content" id="prev-recos">
                                         </div>
                                     </section>
+                                </div>
 
-                                    <section class="doc-section" style="margin-top: 32px;">
+                                <!-- PAGE 4 -->
+                                <div class="preview-page">
+                                    <div class="doc-classification sect-classif">NON PROTÉGÉ</div>
+                                    <section class="doc-section">
                                         <div class="section-title" style="border-left-color: var(--accent);">
                                             <h2>04. AVIS QWI / WEAPONS SCHOOL</h2>
                                         </div>
@@ -4175,6 +4210,8 @@
                 }
                 const repairedOnLoad = App.ensureDataShape();
                 if (!App.data.meta.date) App.data.meta.date = new Date().toISOString().split('T')[0];
+                const navQwi = document.getElementById('nav-qwi');
+                if (navQwi) navQwi.style.display = App.ui.isExternalEditor ? 'flex' : 'none';
 
                 // Bind Input Change Listener for Import
                 document.getElementById('file-input').addEventListener('change', App.importJSON);
@@ -4397,21 +4434,31 @@
             },
 
             nav: (index) => {
-                App.ui.currentTab = index;
+                const isExternalEditor = !!App.ui.isExternalEditor;
+                const requestedIndex = Number(index);
+                const effectiveIndex = isExternalEditor ? requestedIndex : (requestedIndex === 5 ? 4 : requestedIndex);
+                App.ui.currentTab = effectiveIndex;
                 // Update Sidebar
-                document.querySelectorAll('.nav-item').forEach((el, i) => {
-                    el.classList.toggle('active', i === index);
+                document.querySelectorAll('.nav-item').forEach((el) => {
+                    const tab = el.dataset.tab;
+                    if (typeof tab === 'undefined') {
+                        el.classList.remove('active');
+                        return;
+                    }
+                    el.classList.toggle('active', Number(tab) === requestedIndex);
                 });
                 // Update Views
-                const views = ['view-header', 'view-facts', 'view-analysis', 'view-reco', 'view-preview'];
+                const views = isExternalEditor
+                    ? ['view-header', 'view-facts', 'view-analysis', 'view-reco', 'view-qwi', 'view-preview']
+                    : ['view-header', 'view-facts', 'view-analysis', 'view-reco', 'view-preview'];
                 views.forEach((id, i) => {
                     const el = document.getElementById(id);
                     if (el) {
-                        el.classList.toggle('active', i === index);
+                        el.classList.toggle('active', i === effectiveIndex);
                     }
                 });
 
-                if (index === 4) App.renderPreview();
+                if (effectiveIndex === views.length - 1) App.renderPreview();
             },
 
             placeCaretAtEnd: (el) => {
@@ -4592,6 +4639,8 @@
                 document.getElementById('reco-equipements').innerHTML = d.recos.equipements || '';
                 document.getElementById('reco-soutien').innerHTML = d.recos.soutien || '';
                 document.getElementById('reco-entrainement').innerHTML = d.recos.entrainement || '';
+                const qwiAdvice = document.getElementById('qwi-advice');
+                if (qwiAdvice) qwiAdvice.innerHTML = d.qwi?.advice || '';
             },
 
             // --- PREVIEW RENDERER ---
