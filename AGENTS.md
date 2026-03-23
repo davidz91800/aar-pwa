@@ -8,9 +8,29 @@ Ce dossier (`C - AAR PWA`) est la source de verite du formulaire AAR (`AAR.html`
 - Une modification faite sur NP n'est propagee aux applications couplees qu'apres validation explicite utilisateur.
 - Ne jamais propager en avance "par defaut".
 
-## Schema AAR actif (maj 2026-03-22)
+## Schema AAR actif (maj 2026-03-23)
 - `Type d'AAR`: l'option UI `AAR FLASH` est renommee en `AAR BAAP` (valeur technique conservee: `FLASH`).
 - `0. Configuration`: les blocs `Type LOG/TAC` et `Cadre TAC` restent dans le JSON legacy mais sont masques dans l'UI.
+- `0. Configuration`: ajout d'un switch `Anonymisation AAR` compact avec infobulle explicite.
+  - `Grade`, `Nom`, `Prenom`, `Escadron` restent obligatoires en saisie.
+  - quand l'option est active, les valeurs identite sont anonymisees dans l'AAR transmis (cles legacy conservees avec valeurs neutres), avec drapeau `meta.identityAnonymized=true`.
+- Envoi HUB (`Send to QWI`):
+  - regle de transmission differenciee:
+    - HUB (`buildHubPayload`): conserve les champs identite pour visibilite QWI et porte les drapeaux `identityAnonymized/identityVisibility`.
+    - payload portable (email/export): anonymise strictement les champs identite quand l'option est active.
+  - objectif: NON QWI reste masque, QWI garde la visibilite identite.
+  - marqueur transversal anonymisation: ajout technique de `#ANONYME` dans `meta.hashtags` quand anonymisation active (supprime sinon) pour signaler explicitement les hubs meme si le backend retire les flags meta.
+  - contrainte UX: ce marqueur ne doit jamais etre affiche a l'utilisateur dans les hubs (filtre d'affichage cote D/E).
+  - regle anti-ecrasement Drive: l'envoi HUB force `driveFileId=''` et genere un nom de fichier unique (date + heure + millisecondes + suffixe aleatoire) pour creer un nouveau JSON a chaque envoi.
+  - la validation de succes `upsert` est stricte: `response.file.id` est obligatoire, sinon erreur bloquante.
+  - la confirmation utilisateur est minimale (statut + consigne email QWI DR), sans details techniques ni reference fichier/lien Drive.
+  - un diagnostic backend post-upsert est execute automatiquement (`action=status` + `action=listAars`) pour validation interne:
+    - presence de `AAR_FOLDER_ID` (`hasDefaultFolderId`),
+    - visibilite effective du `file.id` dans `listAars`,
+    - detail d'erreur reseau/backend si indisponible.
+  - recovery automatique si incoherence `upsert OK` mais `fileVisibleInListAars=false`:
+    - nouvelle tentative `upsert` sans `driveFileId` pour forcer l'ecriture dans le dossier nominal du HUB,
+    - en cas d'echec de confirmation apres recovery, l'envoi est bloque avec erreur explicite (plus de faux positif "envoye").
 - `0. Configuration`: `mission-config.js` expose le catalogue hashtags general (`hashtags`) + un referentiel dedie boutons FAITS (`factsHashtags`, `factsHashtagsConfigured`, `factsHashtagTooltipMap`) + `tooltipComments`.
 - `1. Faits`: nouveaux modules BAAP optionnels:
   - `facts.baapSelected`,
