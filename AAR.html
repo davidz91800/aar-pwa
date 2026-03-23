@@ -5,15 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>After Action Review V1.0</title>
-    <link rel="manifest" href="./manifest.webmanifest?v=20260323a">
+    <link rel="manifest" href="./manifest.webmanifest?v=20260323b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="AAR PWA">
     <meta name="theme-color" content="#0f172a">
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260323a">
-    <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon.png?v=20260323a">
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png?v=20260323a">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=20260323a">
-    <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png?v=20260323a">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260323b">
+    <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon.png?v=20260323b">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png?v=20260323b">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=20260323b">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png?v=20260323b">
     <style>
         /* --- THEME & VARIABLES --- */
         :root {
@@ -6089,6 +6089,7 @@
                 try {
                     upsertInfo = await App.pushToHubBeforeMail();
                 } catch (error) {
+                    App.setSendQwiBusy(false);
                     App.data.meta.workflowStatus = previousSendMeta.workflowStatus;
                     App.data.meta.sentToQwiAt = previousSendMeta.sentToQwiAt;
                     App.data.meta.publishedAt = previousSendMeta.publishedAt;
@@ -6100,6 +6101,8 @@
                     });
                     return;
                 }
+
+                App.setSendQwiBusy(false);
 
                 try {
                     await DialogUI.alert({
@@ -6114,9 +6117,6 @@
                         message: `L'AAR est bien enregistré sur le HUB, mais l'ouverture de l'email a échoué.\n\n${error?.message || error}`,
                         kind: "danger"
                     });
-                } finally {
-                    // Keep a short lock to avoid accidental double tap.
-                    setTimeout(() => App.setSendQwiBusy(false), 1200);
                 }
             },
             printReport: () => {
