@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -312,6 +312,121 @@
 
         .report-kind-item.active {
             transform: translateY(-2px);
+        }
+
+        .anon-config-card {
+            margin-top: -0.1rem;
+            margin-bottom: 1.1rem;
+            padding: 0.75rem 0.85rem;
+            border: 1px solid rgba(14, 165, 233, 0.34);
+            border-radius: 12px;
+            background:
+                radial-gradient(circle at 84% -30%, rgba(56, 189, 248, 0.22), rgba(56, 189, 248, 0) 55%),
+                linear-gradient(135deg, rgba(2, 132, 199, 0.14), rgba(30, 41, 59, 0.48) 62%);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.46);
+        }
+
+        .anon-config-card.active {
+            border-color: rgba(16, 185, 129, 0.45);
+            box-shadow:
+                inset 0 0 0 1px rgba(16, 185, 129, 0.22),
+                0 0 18px rgba(16, 185, 129, 0.16);
+        }
+
+        .anon-config-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .anon-config-title-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .anon-config-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+            color: #dbeafe;
+        }
+
+        .anon-config-title-line .info-trigger {
+            min-width: 1.3rem;
+            min-height: 1.3rem;
+            font-size: 0.78rem;
+            color: #bfdbfe;
+            border-color: rgba(191, 219, 254, 0.38);
+            background: rgba(191, 219, 254, 0.12);
+        }
+
+        .anon-switch {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex: 0 0 auto;
+            cursor: pointer;
+        }
+
+        .anon-switch input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .anon-slider {
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            background: rgba(15, 23, 42, 0.7);
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .anon-slider::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(2, 6, 23, 0.45);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .anon-switch input:focus-visible+.anon-slider {
+            outline: 2px solid rgba(59, 130, 246, 0.75);
+            outline-offset: 2px;
+        }
+
+        .anon-switch input:checked+.anon-slider {
+            background: rgba(16, 185, 129, 0.33);
+            border-color: rgba(16, 185, 129, 0.78);
+        }
+
+        .anon-switch input:checked+.anon-slider::after {
+            transform: translateX(20px);
+            background: #a7f3d0;
+        }
+
+        .anon-config-status {
+            margin-top: 0.45rem;
+            font-size: 0.76rem;
+            line-height: 1.35;
+            color: #cbd5e1;
+        }
+
+        .anon-config-status.active {
+            color: #bbf7d0;
         }
 
         .baap-role-selector {
@@ -1671,6 +1786,14 @@
                 grid-template-columns: 1fr;
             }
 
+            .anon-config-row {
+                gap: 0.55rem;
+            }
+
+            .anon-config-title {
+                font-size: 0.76rem;
+            }
+
             input,
             textarea,
             select {
@@ -2044,6 +2167,19 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div id="anonymization-card" class="anon-config-card" role="group" aria-labelledby="anonymization-title">
+                    <div class="anon-config-row">
+                        <div class="anon-config-title-line">
+                            <span id="anonymization-title" class="anon-config-title">Anonymisation AAR</span>
+                            <button type="button" class="info-trigger" data-tooltip-key="AAR_IDENTITY_ANONYMIZATION" aria-label="Info anonymisation AAR">ⓘ</button>
+                        </div>
+                        <label class="anon-switch" for="meta-anonymize" title="Activer l'anonymisation de transmission">
+                            <input type="checkbox" id="meta-anonymize" onchange="App.updateIdentityAnonymization(this.checked)">
+                            <span class="anon-slider" aria-hidden="true"></span>
+                        </label>
+                    </div>
+                    <div id="meta-anonymize-status" class="anon-config-status" aria-live="polite"></div>
                 </div>
                 <div class="form-group">
                     <label>Titre de l'événement <span class="required-star">*</span></label>
@@ -2618,6 +2754,7 @@
             gradeAutre: "",
             nom: "",
             prenom: "",
+            identityAnonymized: false,
             unite: "",
             uniteAutre: "",
             flotte: "",
@@ -2756,6 +2893,10 @@
             REPORT_KIND_CONSOLIDE: {
                 title: "AAR WEAPONS SCHOOL",
                 text: "à utiliser pour des AAR qui concerne la tactique. Envoie d'abord l'AAR pour relecture QWI avant diffusion sur l'AAR Reader."
+            },
+            AAR_IDENTITY_ANONYMIZATION: {
+                title: "Anonymisation AAR",
+                text: "Activez cette option pour masquer Grade, Nom, Prenom et Escadron dans l'AAR transmis (export, envoi QWI, HUB). Ces champs restent obligatoires pour l'auteur dans l'onglet Configuration. Seule l'equipe QWI garde la visibilite de l'identite via le canal d'echange QWI."
             },
             BAAP_ROLE_AIRFIELD: {
                 title: "Airfield",
@@ -3036,6 +3177,54 @@
                     TBM700: 'TBM700'
                 };
                 return map[token] || raw;
+            },
+
+            isIdentityAnonymized: (meta = App.data?.meta) => {
+                const source = (meta && typeof meta === 'object') ? meta : {};
+                if (typeof source.identityAnonymized === 'string') {
+                    const normalized = source.identityAnonymized.trim().toLowerCase();
+                    return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on';
+                }
+                return Boolean(source.identityAnonymized);
+            },
+
+            getResolvedGrade: (meta = App.data?.meta) => {
+                const source = (meta && typeof meta === 'object') ? meta : {};
+                return source.grade === 'AUTRE'
+                    ? String(source.gradeAutre || '').trim()
+                    : String(source.grade || '').trim();
+            },
+
+            getResolvedUnit: (meta = App.data?.meta) => {
+                const source = (meta && typeof meta === 'object') ? meta : {};
+                return source.unite === 'AUTRE'
+                    ? String(source.uniteAutre || '').trim()
+                    : String(source.unite || '').trim();
+            },
+
+            getIdentityLabel: (meta = App.data?.meta) => {
+                const source = (meta && typeof meta === 'object') ? meta : {};
+                const rank = App.getResolvedGrade(source);
+                return [rank, source.nom || "", source.prenom || ""]
+                    .map((part) => String(part || '').trim())
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim();
+            },
+
+            renderAnonymizationControls: () => {
+                const enabled = App.isIdentityAnonymized();
+                const toggle = document.getElementById('meta-anonymize');
+                const card = document.getElementById('anonymization-card');
+                const status = document.getElementById('meta-anonymize-status');
+                if (toggle) toggle.checked = enabled;
+                if (card) card.classList.toggle('active', enabled);
+                if (status) {
+                    status.classList.toggle('active', enabled);
+                    status.textContent = enabled
+                        ? "ACTIVE: Grade, Nom, Prenom et Escadron restent obligatoires mais sont retires de l'AAR transmis."
+                        : "INACTIVE: l'AAR transmis contient Grade, Nom, Prenom et Escadron.";
+                }
             },
 
             sanitizeRichHtml: (value) => {
@@ -3497,6 +3686,7 @@
                 App.data.meta.sentToQwiAt = String(App.data.meta.sentToQwiAt || '').trim();
                 App.data.meta.publishedAt = String(App.data.meta.publishedAt || '').trim();
                 App.data.meta.qwiReviewedAt = String(App.data.meta.qwiReviewedAt || '').trim();
+                App.data.meta.identityAnonymized = App.isIdentityAnonymized(App.data.meta);
 
                 return repairedRichText;
             },
@@ -5011,6 +5201,12 @@
                 App.save();
             },
 
+            updateIdentityAnonymization: (enabled) => {
+                App.data.meta.identityAnonymized = Boolean(enabled);
+                App.save();
+                App.renderAnonymizationControls();
+            },
+
             updateUnit: (val) => {
                 App.data.meta.unite = val;
                 if (val !== 'AUTRE') App.data.meta.uniteAutre = "";
@@ -5079,7 +5275,7 @@
                 btn.style.pointerEvents = busy ? 'none' : '';
             },
 
-            buildQwiSendSuccessMessage: (workflowStatus) => {
+            buildQwiSendSuccessMessage: (workflowStatus, upsertInfo = null) => {
                 const wsLine = workflowStatus === 'PENDING_QWI_REVIEW'
                     ? "AAR WEAPONS SCHOOL : il sera visible uniquement après relecture et validation QWI."
                     : "AAR BAAP : il est publié directement sur l'AAR Reader.";
@@ -5089,7 +5285,7 @@
                     "",
                     "Important : envoyez maintenant l'email préparé vers l'adresse QWI DR.",
                     "C'est indispensable pour alimenter aussi l'AAR Reader DR et éviter tout écart entre NP et DR."
-                ].join('\n');
+                ].filter(Boolean).join('\n');
             },
 
             openQwiDraftEmail: (workflowStatus) => {
@@ -5097,8 +5293,10 @@
                 const date = App.data.meta.date || "Unknown Date";
                 const reportKind = String(App.data.meta.reportKind || 'CONSOLIDE').toUpperCase() === 'FLASH' ? 'FLASH' : 'CONSOLIDE';
                 const reportKindLabel = App.getReportKindLabel(reportKind);
-                const rank = App.data.meta.grade === 'AUTRE' ? (App.data.meta.gradeAutre || "") : (App.data.meta.grade || "");
-                const identity = [rank, App.data.meta.nom || "", App.data.meta.prenom || ""].filter(Boolean).join(" ").trim() || "Unknown";
+                const identity = App.getIdentityLabel(App.data.meta) || "Unknown";
+                const unit = App.getResolvedUnit(App.data.meta);
+                const identityAndUnit = [identity, unit].filter(Boolean).join(" | ");
+                const anonymized = App.isIdentityAnonymized();
                 const portablePayload = JSON.stringify(App.buildPortablePayload());
                 const payloadBlock = `\n==================== AAR JSON PAYLOAD ====================\n---BEGIN-AAR-JSON---\n${portablePayload}\n---END-AAR-JSON---\n==========================================================`;
                 const recipients = 'ciet-qwi.contact.fct@intradef.gouv.fr';
@@ -5106,9 +5304,56 @@
                 const diffusionLine = workflowStatus === 'PENDING_QWI_REVIEW'
                     ? '- Statut HUB : En attente de relecture / publication QWI'
                     : '- Statut HUB : Déjà publié sur le AAR Reader';
-                const body = `Bonjour,\n\nAAR:\n\n- Type : ${reportKindLabel}\n- Date : ${date}\n- Titre : ${title}\n- Redacteur : ${identity}\n${diffusionLine}\n\nCordialement.${payloadBlock}`;
+                const identityLine = anonymized
+                    ? `- Redacteur (QWI uniquement) : ${identityAndUnit || "Unknown"}`
+                    : `- Redacteur : ${identityAndUnit || "Unknown"}`;
+                const anonymizationLine = anonymized
+                    ? '- Anonymisation : ACTIVE (Grade/Nom/Prenom/Escadron retires de l\'AAR transmis)'
+                    : '- Anonymisation : INACTIVE';
+                const body = `Bonjour,\n\nAAR:\n\n- Type : ${reportKindLabel}\n- Date : ${date}\n- Titre : ${title}\n${identityLine}\n${anonymizationLine}\n${diffusionLine}\n\nCordialement.${payloadBlock}`;
                 const mailto = `mailto:${recipients}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                 window.location.href = mailto;
+            },
+
+            applyIdentityTransmissionPolicy: (meta, options = {}) => {
+                const target = (meta && typeof meta === 'object') ? meta : {};
+                const anonymized = App.isIdentityAnonymized(target);
+                const stripIdentity = options.stripIdentity !== false;
+                const hashtags = App.normalizeHashtagArray(
+                    Array.isArray(target.hashtags) && target.hashtags.length
+                        ? target.hashtags
+                        : App.collectLegacyHashtags(target)
+                );
+                // Remove any legacy #ANONYME hashtag that may still exist in data
+                const cleanHashtags = hashtags.filter((tag) => App.normalizeKey(tag) !== App.normalizeKey('#anonyme'));
+                target.identityAnonymized = anonymized;
+                target.hashtags = App.normalizeHashtagArray(cleanHashtags);
+                if (anonymized) {
+                    target.identityVisibility = 'QWI_ONLY';
+                    if (stripIdentity) {
+                        // Keep legacy keys to preserve downstream automation compatibility,
+                        // while removing personal identity values.
+                        target.grade = 'AUTRE';
+                        target.gradeAutre = 'ANONYMISE';
+                        target.nom = 'ANONYME';
+                        target.prenom = 'ANONYME';
+                        target.unite = 'AUTRE';
+                        target.uniteAutre = 'ANONYMISE';
+                    }
+                } else {
+                    delete target.identityVisibility;
+                }
+                return anonymized;
+            },
+
+            buildHubPayload: () => {
+                App.ensureDataShape();
+                const payload = JSON.parse(JSON.stringify(App.data || {}));
+                if (!payload.meta || typeof payload.meta !== 'object') payload.meta = {};
+                delete payload.meta.driveFileId;
+                // HUB payload keeps identity fields for QWI visibility while carrying anonymization flags.
+                App.applyIdentityTransmissionPolicy(payload.meta, { stripIdentity: false });
+                return payload;
             },
 
             buildPortablePayload: () => {
@@ -5120,18 +5365,29 @@
                 delete payload.meta.sentToQwiAt;
                 delete payload.meta.publishedAt;
                 delete payload.meta.qwiReviewedAt;
+                // Portable payload (mail/exports) keeps strict anonymization when requested.
+                App.applyIdentityTransmissionPolicy(payload.meta, { stripIdentity: true });
                 return payload;
             },
 
             buildDriveFileName: () => {
-                const date = App.data.meta.date || new Date().toISOString().split('T')[0];
+                const now = new Date();
+                const date = App.data.meta.date || now.toISOString().split('T')[0];
                 const title = String(App.data.meta.title || 'aar').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'aar';
-                const identity = [App.data.meta.nom || '', App.data.meta.prenom || '']
-                    .join('_')
-                    .replace(/[^a-z0-9]+/gi, '_')
-                    .replace(/^_+|_+$/g, '')
-                    .toLowerCase() || 'anon';
-                return `${date}_${title}_${identity}.json`;
+                const identity = App.isIdentityAnonymized()
+                    ? 'anonymise'
+                    : ([App.data.meta.nom || '', App.data.meta.prenom || '']
+                        .join('_')
+                        .replace(/[^a-z0-9]+/gi, '_')
+                        .replace(/^_+|_+$/g, '')
+                        .toLowerCase() || 'anon');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                const ms = String(now.getMilliseconds()).padStart(3, '0');
+                const rand = Math.random().toString(36).slice(2, 6);
+                const unique = `${hh}${mm}${ss}${ms}_${rand}`;
+                return `${date}_${title}_${identity}_${unique}.json`;
             },
 
             callAppsScript: async (payload) => {
@@ -5170,6 +5426,89 @@
                 }
             },
 
+            callAppsScriptGet: async (action, params = {}) => {
+                const cfg = (App.missionConfig && App.missionConfig.appsScript) || {};
+                const webAppUrl = String(cfg.webAppUrl || '').trim();
+                const accessKey = String(cfg.accessKey || '').trim();
+                if (!webAppUrl) throw new Error("Apps Script non configuré (mission-config.js).");
+                if (!action) throw new Error("Action Apps Script manquante.");
+
+                const url = new URL(webAppUrl);
+                url.searchParams.set('action', String(action).trim());
+                if (accessKey) url.searchParams.set('accessKey', accessKey);
+                Object.entries(params || {}).forEach(([key, value]) => {
+                    const k = String(key || '').trim();
+                    const v = String(value == null ? '' : value).trim();
+                    if (!k || !v) return;
+                    url.searchParams.set(k, v);
+                });
+
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 15000);
+                try {
+                    const response = await fetch(url.toString(), {
+                        method: 'GET',
+                        cache: 'no-store',
+                        signal: controller.signal
+                    });
+                    const text = await response.text();
+                    let data = null;
+                    try { data = text ? JSON.parse(text) : null; } catch (_) {}
+                    if (!response.ok) {
+                        throw new Error(data?.error || data?.message || text || response.statusText || 'Erreur Apps Script.');
+                    }
+                    if (!data || data.ok !== true) {
+                        throw new Error(data?.error || data?.message || 'Réponse Apps Script invalide.');
+                    }
+                    return data;
+                } catch (error) {
+                    if (error?.name === 'AbortError') throw new Error('Timeout Apps Script.');
+                    throw error;
+                } finally {
+                    clearTimeout(timer);
+                }
+            },
+
+            diagnoseHubWrite: async (fileId) => {
+                const diagnostics = {
+                    statusOk: false,
+                    hasDefaultFolderId: null,
+                    fileVisibleInListAars: null,
+                    listCount: null,
+                    error: ""
+                };
+
+                try {
+                    const [statusResult, listResult] = await Promise.allSettled([
+                        App.callAppsScriptGet('status'),
+                        App.callAppsScriptGet('listAars')
+                    ]);
+
+                    if (statusResult.status === 'fulfilled') {
+                        const statusData = statusResult.value || {};
+                        diagnostics.statusOk = statusData.ok === true;
+                        diagnostics.hasDefaultFolderId = !!(statusData.config && statusData.config.hasDefaultFolderId);
+                    } else {
+                        diagnostics.error = `status: ${statusResult.reason?.message || statusResult.reason || 'erreur inconnue'}`;
+                    }
+
+                    if (listResult.status === 'fulfilled') {
+                        const listData = listResult.value || {};
+                        const files = Array.isArray(listData.files) ? listData.files : [];
+                        diagnostics.listCount = files.length;
+                        diagnostics.fileVisibleInListAars = files.some((item) => String(item?.id || '').trim() === String(fileId || '').trim());
+                    } else {
+                        diagnostics.error = diagnostics.error
+                            ? `${diagnostics.error} | listAars: ${listResult.reason?.message || listResult.reason || 'erreur inconnue'}`
+                            : `listAars: ${listResult.reason?.message || listResult.reason || 'erreur inconnue'}`;
+                    }
+                } catch (error) {
+                    diagnostics.error = String(error?.message || error || 'erreur diagnostic inconnue');
+                }
+
+                return diagnostics;
+            },
+
             stampWorkflowBeforeSend: (workflowStatus) => {
                 const now = new Date().toISOString();
                 App.data.meta.workflowStatus = workflowStatus;
@@ -5183,18 +5522,68 @@
             },
 
             pushToHubBeforeMail: async () => {
+                const targetFileName = App.buildDriveFileName();
                 const response = await App.callAppsScript({
                     action: 'upsert',
-                    driveFileId: String(App.data.meta.driveFileId || '').trim(),
-                    fileName: App.buildDriveFileName(),
-                    mission: App.data
+                    driveFileId: '',
+                    fileName: targetFileName,
+                    mission: App.buildHubPayload()
                 });
-                const file = response?.file || {};
-                if (file && file.id) {
-                    App.data.meta.driveFileId = String(file.id || '').trim();
-                    App.save();
+                const primaryFile = response?.file || {};
+                let finalFileId = String(primaryFile.id || '').trim();
+                let finalFileName = String(primaryFile.name || targetFileName).trim();
+                let finalModifiedTime = String(primaryFile.modifiedTime || '').trim();
+
+                if (!finalFileId) {
+                    throw new Error("Reponse upsert invalide: file.id absent. Verifiez le deploiement Apps Script actif (/exec) et le dossier Drive cible.");
                 }
-                return true;
+
+                let diagnostics = await App.diagnoseHubWrite(finalFileId);
+
+                // Recovery path:
+                // if upsert succeeded but file is not visible in the HUB folder listing,
+                // re-run upsert without driveFileId to force write in the configured folder.
+                if (diagnostics.fileVisibleInListAars === false) {
+                    const fallbackResponse = await App.callAppsScript({
+                        action: 'upsert',
+                        driveFileId: '',
+                        fileName: targetFileName,
+                        mission: App.buildHubPayload()
+                    });
+                    const fallbackFile = fallbackResponse?.file || {};
+                    const fallbackFileId = String(fallbackFile.id || '').trim();
+                    if (!fallbackFileId) {
+                        throw new Error("Reponse upsert de recuperation invalide: file.id absent.");
+                    }
+
+                    finalFileId = fallbackFileId;
+                    finalFileName = String(fallbackFile.name || targetFileName).trim();
+                    finalModifiedTime = String(fallbackFile.modifiedTime || '').trim();
+
+                    const fallbackDiagnostics = await App.diagnoseHubWrite(finalFileId);
+                    diagnostics = {
+                        ...fallbackDiagnostics,
+                        recoveryAttempted: true,
+                        recoverySucceeded: fallbackDiagnostics.fileVisibleInListAars === true,
+                        recoveryReason: 'primary_file_not_visible_in_listAars',
+                        primaryFileId: String(primaryFile.id || '').trim(),
+                        primaryFileName: String(primaryFile.name || '').trim()
+                    };
+                }
+
+                if (diagnostics.fileVisibleInListAars !== true) {
+                    const detail = diagnostics.error ? ` Detail: ${diagnostics.error}` : '';
+                    throw new Error(`Ecriture Drive non confirmee dans le dossier HUB (fileVisibleInListAars=false).${detail}`);
+                }
+
+                App.data.meta.driveFileId = finalFileId;
+                App.save();
+                return {
+                    id: finalFileId,
+                    name: finalFileName,
+                    modifiedTime: finalModifiedTime,
+                    diagnostics
+                };
             },
 
             updateReportKind: (kind) => {
@@ -5531,6 +5920,7 @@
                 document.getElementById('meta-flotte').value = d.meta.flotte || '';
                 document.getElementById('meta-flotte-autre').value = d.meta.flotteAutre || '';
                 document.getElementById('meta-flotte-autre').style.display = (d.meta.flotte === 'AUTRE') ? 'block' : 'none';
+                App.renderAnonymizationControls();
                 document.getElementById('meta-mission-type').value = d.meta.missionType || '';
                 document.getElementById('meta-log-country-search').value = App.ui.logCountrySearch || App.getCountrySearchDisplayValue() || '';
                 document.getElementById('meta-log-airfield-search').value = App.ui.logAirfieldSearch || App.getAirfieldSearchDisplayValue() || '';
@@ -5583,13 +5973,18 @@
                 };
 
                 const redacteurText = () => {
-                    const g = d.meta.grade === 'AUTRE' ? d.meta.gradeAutre : d.meta.grade;
-                    const u = d.meta.unite === 'AUTRE' ? d.meta.uniteAutre : d.meta.unite;
+                    if (App.isIdentityAnonymized(d.meta)) {
+                        const fleet = d.meta.flotte === 'AUTRE' ? d.meta.flotteAutre : d.meta.flotte;
+                        let text = '<span style="font-weight: 700; color: #0f766e;">ANONYMISE POUR DIFFUSION</span><br><span style="font-weight: normal; opacity: 0.86; font-size: 0.85em;">Identite complete visible uniquement dans le circuit QWI.</span>';
+                        if (fleet) {
+                            text += '<br><span style="font-weight: normal; opacity: 0.8; font-size: 0.85em;">Flotte: ' + App.escapeHtmlText(fleet) + '</span>';
+                        }
+                        return text;
+                    }
+                    const g = App.getResolvedGrade(d.meta);
+                    const u = App.getResolvedUnit(d.meta);
                     const f = d.meta.flotte === 'AUTRE' ? d.meta.flotteAutre : d.meta.flotte;
-                    const parts = [];
-                    if (g) parts.push(g);
-                    if (d.meta.nom) parts.push(d.meta.nom);
-                    if (d.meta.prenom) parts.push(d.meta.prenom);
+                    const parts = [g, d.meta.nom, d.meta.prenom].filter(Boolean);
 
                     let text = parts.length ? parts.join(' ') : '-';
                     const unitAndFleet = [u, f].filter(Boolean).join(' | ');
@@ -5665,9 +6060,10 @@
                     publishedAt: App.data.meta.publishedAt || ''
                 };
                 App.stampWorkflowBeforeSend(workflowStatus);
+                let upsertInfo = null;
 
                 try {
-                    await App.pushToHubBeforeMail();
+                    upsertInfo = await App.pushToHubBeforeMail();
                 } catch (error) {
                     App.data.meta.workflowStatus = previousSendMeta.workflowStatus;
                     App.data.meta.sentToQwiAt = previousSendMeta.sentToQwiAt;
@@ -5684,7 +6080,7 @@
                 try {
                     await DialogUI.alert({
                         title: "AAR envoyé au HUB",
-                        message: App.buildQwiSendSuccessMessage(workflowStatus),
+                        message: App.buildQwiSendSuccessMessage(workflowStatus, upsertInfo),
                         confirmLabel: "Ouvrir l'email QWI DR"
                     });
                     App.openQwiDraftEmail(workflowStatus);
@@ -5747,6 +6143,7 @@
                     gradeAutre: currentMeta.gradeAutre || "",
                     nom: currentMeta.nom || "",
                     prenom: currentMeta.prenom || "",
+                    identityAnonymized: App.isIdentityAnonymized(currentMeta),
                     unite: currentMeta.unite || "",
                     uniteAutre: currentMeta.uniteAutre || "",
                     flotte: currentMeta.flotte || "",
