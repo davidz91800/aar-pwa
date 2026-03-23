@@ -24,6 +24,7 @@ Ce dossier (`C - AAR PWA`) est la source de verite du formulaire AAR (`AAR.html`
 - `1. Faits` (UI): l'ordre des boutons `#...` suit strictement l'ordre de `factsHashtags` (pas de tri alphabetique).
 - `1. Faits` (UI): suppression des encarts specifiques par bouton; un unique encart d'edition est conserve (`What? Why? When? Where? Who? How?`).
 - `Infobulles`: les textes des aides utilisent `tooltipComments` (catalogue dynamique fusionne avec les valeurs par defaut) et les boutons `#` de `1. FAITS` resolvent leur infobulle via `factsHashtagTooltipMap`.
+- `1. Faits` (UI): une infobulle de contexte `Hashtags communs` est affichee en tete de ligne comme bouton autonome, positionnee a gauche du premier bouton `#...` (style `info-trigger`).
 - `Infobulles` (boutons `#`): les hashtags personnalises peuvent porter des cles dediees `FACTS_HASHTAG_*` pour avoir un commentaire propre par bouton, tout en conservant les cles socle `BAAP_ROLE_*`.
 
 ## Couplage obligatoire

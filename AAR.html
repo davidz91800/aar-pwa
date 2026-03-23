@@ -370,6 +370,16 @@
             gap: 0.35rem;
         }
 
+        .baap-role-line-help {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(245, 158, 11, 0.55);
+            border-radius: 10px;
+            background: rgba(245, 158, 11, 0.22);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.22);
+        }
+
         .baap-role-item .level {
             font-size: 0.68rem;
             font-weight: 900;
@@ -378,6 +388,20 @@
             white-space: normal;
             line-height: 1.15;
             overflow-wrap: anywhere;
+        }
+
+        .baap-role-line-help .facts-line-help-trigger {
+            min-width: 1.26rem;
+            min-height: 1.26rem;
+            font-size: 0.8rem;
+            background: rgba(245, 158, 11, 0.36);
+            border-color: rgba(245, 158, 11, 0.86);
+            color: #fef3c7;
+        }
+
+        .baap-role-line-help .facts-line-help-trigger:hover {
+            background: rgba(245, 158, 11, 0.5);
+            border-color: #fbbf24;
         }
 
         .baap-role-item .info-trigger {
@@ -2760,6 +2784,10 @@
             BAAP_ROLE_OTHER: {
                 title: "Autre",
                 text: "Pour tout autre événement non lié aux autres catégories."
+            },
+            FACTS_HASHTAGS_LINE_HELP: {
+                title: "Hashtags communs",
+                text: "Ces hashtags communs sont disponibles pour faciliter la recherche.\nVous pouvez en sélectionner plusieurs en cliquant dessus.\nIls peuvent évoluer au fil du temps en fonction des besoins des utilisateurs.\nLeur objectif est de vous aider à filtrer rapidement les AAR pertinents.\nPar exemple :\n- la SAA d’un escadron peut utiliser #airfield pour mettre à jour ses Airfield Surveys ;\n- les officiers renseignement peuvent utiliser #intel pour exploiter les données des missions récentes."
             },
             DORESE_D: {
                 title: "D - Doctrine",
@@ -5442,7 +5470,11 @@
                 const factsHashtags = App.getFactsRoleCatalog();
 
                 selector.style.display = 'grid';
-                selector.innerHTML = factsHashtags.map((hashtag) => {
+                const columnCount = Math.max(1, factsHashtags.length);
+                selector.style.gridTemplateColumns = `2.15rem repeat(${columnCount}, minmax(0, 1fr))`;
+                selector.innerHTML = [
+                    `<div class="baap-role-line-help"><button type="button" class="info-trigger facts-line-help-trigger" data-tooltip-key="FACTS_HASHTAGS_LINE_HELP" aria-label="Info hashtags communs">ⓘ</button></div>`,
+                    ...factsHashtags.map((hashtag) => {
                     const normalized = App.normalizeHashtag(hashtag);
                     const tooltipKey = App.getFactsRoleTooltipKey(normalized);
                     const isActive = selectedSet.has(App.normalizeKey(normalized));
@@ -5454,7 +5486,8 @@
                             </div>
                         </div>
                     `;
-                }).join('');
+                })
+                ].join('');
                 selector.querySelectorAll('[data-facts-role-tag]').forEach((node) => {
                     node.addEventListener('click', (event) => {
                         const tag = String(node.getAttribute('data-facts-role-tag') || '').trim();
