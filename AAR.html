@@ -3181,11 +3181,16 @@
 
             isIdentityAnonymized: (meta = App.data?.meta) => {
                 const source = (meta && typeof meta === 'object') ? meta : {};
+                // Direct flag (primary)
                 if (typeof source.identityAnonymized === 'string') {
                     const normalized = source.identityAnonymized.trim().toLowerCase();
-                    return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on';
+                    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
                 }
-                return Boolean(source.identityAnonymized);
+                if (source.identityAnonymized === true) return true;
+                // Legacy / Robustness fallback (hashtag)
+                const hashtags = Array.isArray(source.hashtags) ? source.hashtags : [];
+                if (hashtags.some((h) => App.normalizeKey(h) === App.normalizeKey('#anonyme'))) return true;
+                return false;
             },
 
             getResolvedGrade: (meta = App.data?.meta) => {
@@ -5348,10 +5353,14 @@
                         ? target.hashtags
                         : App.collectLegacyHashtags(target)
                 );
-                // Remove any legacy #ANONYME hashtag that may still exist in data
+                // Keep a hidden technical marker for backend compatibility (UI layers must filter it out).
                 const cleanHashtags = hashtags.filter((tag) => App.normalizeKey(tag) !== App.normalizeKey('#anonyme'));
+                const finalHashtags = anonymized
+                    ? [...cleanHashtags, '#ANONYME']
+                    : cleanHashtags;
+
                 target.identityAnonymized = anonymized;
-                target.hashtags = App.normalizeHashtagArray(cleanHashtags);
+                target.hashtags = App.normalizeHashtagArray(finalHashtags);
                 if (anonymized) {
                     target.identityVisibility = 'QWI_ONLY';
                     if (stripIdentity) {
