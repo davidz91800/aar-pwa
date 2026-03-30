@@ -1,4 +1,4 @@
-const CACHE_NAME = "aar-shell-v15";
+const CACHE_NAME = "aar-shell-v18";
 const SHELL_URL = "./AAR.html";
 const CORE_ASSETS = [SHELL_URL];
 const OPTIONAL_ASSETS = [
@@ -7,6 +7,7 @@ const OPTIONAL_ASSETS = [
   "./mission-config.js",
   "./Logo QWI.png",
   "./AAR.png",
+  "./Tutoriel_AAR_Intraced_compressed.pdf",
   "./apple-touch-icon.png",
   "./favicon-32.png",
   "./icon-192.png",

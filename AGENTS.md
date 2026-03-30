@@ -8,7 +8,8 @@ Ce dossier (`C - AAR PWA`) est la source de verite du formulaire AAR (`AAR.html`
 - Une modification faite sur NP n'est propagee aux applications couplees qu'apres validation explicite utilisateur.
 - Ne jamais propager en avance "par defaut".
 
-## Schema AAR actif (maj 2026-03-24)
+## Schema AAR actif (maj 2026-03-30)
+- `Navigation`: ajout du bouton lateral `Tutoriel Intraced` (au-dessus de `Workflow AAR`) qui ouvre `Tutoriel_AAR_Intraced_compressed.pdf` dans une modale quasi plein ecran dediee au PDF (suppression des encarts haut/bas et des controles de pagination), avec fermeture par petite croix discrete, clic exterieur et touche `Echap`; affichage PDF regle en `page-fit`.
 - `Type d'AAR`: l'option UI `AAR FLASH` est renommee en `AAR BAAP` (valeur technique conservee: `FLASH`).
 - `0. Configuration`: les blocs `Type LOG/TAC` et `Cadre TAC` restent dans le JSON legacy mais sont masques dans l'UI.
 - `0. Configuration`: ajout d'un switch `Anonymisation AAR` compact avec infobulle explicite.

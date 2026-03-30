@@ -7,6 +7,7 @@
     <title>After Action Review V1.0</title>
     <link rel="manifest" href="./manifest.webmanifest?v=20260323c">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="AAR PWA">
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260323c">
@@ -177,8 +178,21 @@
             background: rgba(59, 130, 246, 0.05);
         }
 
-        .nav-item.nav-workflow-link {
+        .nav-item.nav-tutorial-link {
             margin-top: auto;
+            border: 1px solid rgba(14, 165, 233, 0.48);
+            color: #bae6fd;
+            background: rgba(14, 116, 144, 0.18);
+        }
+
+        .nav-item.nav-tutorial-link:hover {
+            border-color: rgba(14, 165, 233, 0.8);
+            background: rgba(14, 116, 144, 0.28);
+            color: #e0f2fe;
+        }
+
+        .nav-item.nav-workflow-link {
+            margin-top: 0;
             border: 1px solid rgba(148, 163, 184, 0.26);
             color: #cbd5e1;
             background: rgba(148, 163, 184, 0.06);
@@ -1118,6 +1132,10 @@
                 display: none !important;
             }
 
+            .tutorial-guide-overlay {
+                display: none !important;
+            }
+
             .preview-page {
                 box-shadow: none !important;
                 padding: 0 !important;
@@ -1686,6 +1704,10 @@
                 margin-top: 0;
             }
 
+            .nav-item.nav-tutorial-link {
+                margin-top: 0;
+            }
+
             .nav-item.nav-workflow-link {
                 margin-top: 0;
             }
@@ -2075,6 +2097,106 @@
             height: auto;
             touch-action: pan-x pan-y pinch-zoom;
         }
+
+        .tutorial-guide-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 4800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(2, 6, 23, 0.82);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+
+        .tutorial-guide-overlay.open {
+            display: flex;
+        }
+
+        .tutorial-guide-card {
+            position: relative;
+            width: min(1440px, 99vw);
+            height: min(98vh, 1200px);
+            max-height: 98vh;
+            border-radius: 14px;
+            border: 1px solid rgba(14, 165, 233, 0.45);
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+            box-shadow: 0 28px 64px rgba(2, 6, 23, 0.64), inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tutorial-guide-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            border: 1px solid rgba(71, 85, 105, 0.85);
+            background: rgba(15, 23, 42, 0.78);
+            color: #e2e8f0;
+            border-radius: 999px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1;
+            opacity: 0.86;
+            transition: opacity 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+        }
+
+        .tutorial-guide-close:hover {
+            border-color: rgba(148, 163, 184, 0.92);
+            background: rgba(15, 23, 42, 0.9);
+            color: #fff;
+            opacity: 1;
+        }
+
+        .tutorial-guide-pdf-wrap {
+            border: 1px solid rgba(14, 165, 233, 0.35);
+            border-radius: 12px;
+            background: #0b1220;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .tutorial-guide-frame {
+            border: 0;
+            width: 100%;
+            height: 100%;
+            background: #0b1220;
+        }
+
+        @media (max-width: 900px) {
+            .tutorial-guide-overlay {
+                padding: 6px;
+            }
+
+            .tutorial-guide-card {
+                width: 100%;
+                max-height: 99vh;
+                height: 99vh;
+                border-radius: 12px;
+                padding: 4px;
+            }
+
+            .tutorial-guide-pdf-wrap {
+                min-height: 0;
+            }
+
+            .tutorial-guide-close {
+                top: 8px;
+                right: 8px;
+                width: 28px;
+                height: 28px;
+            }
+        }
     </style>
 </head>
 
@@ -2095,6 +2217,15 @@
             <p class="workflow-guide-subtitle">Rappel création, validation et diffusion</p>
             <div class="workflow-guide-image-wrap">
                 <img class="workflow-guide-image" src="./AAR.png" alt="Workflow complet de création, validation et diffusion des AAR">
+            </div>
+        </div>
+    </div>
+
+    <div id="intraced-tutorial-overlay" class="tutorial-guide-overlay" aria-hidden="true">
+        <div class="tutorial-guide-card" role="dialog" aria-modal="true" aria-label="Tutoriel Intraced">
+            <button id="intraced-tutorial-close" type="button" class="tutorial-guide-close" aria-label="Fermer le tutoriel">&times;</button>
+            <div class="tutorial-guide-pdf-wrap">
+                <iframe id="intraced-tutorial-frame" class="tutorial-guide-frame" title="Tutoriel Intraced" loading="lazy" src="./Tutoriel_AAR_Intraced_compressed.pdf#zoom=page-fit"></iframe>
             </div>
         </div>
     </div>
@@ -2120,6 +2251,10 @@
             <div class="nav-item" data-tab="2" onclick="App.nav(2)"><span>🔬</span> 2. ANALYSE</div>
             <div class="nav-item" data-tab="3" onclick="App.nav(3)"><span>🎯</span> 3. RECOMMANDATIONS</div>
             <div id="nav-qwi" class="nav-item" data-tab="4" onclick="App.nav(4)" style="display: none;"><span>🧭</span> 4. AVIS QWI / WEAPONS SCHOOL</div>
+            <div class="nav-item nav-tutorial-link" onclick="IntracedTutorial.open()"
+                title="Afficher le PDF Tutoriel Intraced">
+                <span>&#128214;</span> Tutoriel Intraced
+            </div>
             <div class="nav-item nav-workflow-link" onclick="WorkflowGuide.open()"
                 title="Afficher le workflow complet création, validation, diffusion">
                 <span>🧭</span> Workflow AAR
@@ -3107,6 +3242,72 @@
                 overlay.addEventListener('click', (event) => {
                     if (event.target === overlay) close();
                 });
+                document.addEventListener('keydown', (event) => {
+                    if (!overlay.classList.contains('open')) return;
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        close();
+                    }
+                });
+            };
+
+            return { init, open, close };
+        })();
+
+        const IntracedTutorial = (() => {
+            const PDF_PATH = './Tutoriel_AAR_Intraced_compressed.pdf';
+            const PDF_SRC = `${PDF_PATH}#zoom=page-fit`;
+            let overlay = null;
+            let card = null;
+            let frame = null;
+            let closeBtn = null;
+            let lastActive = null;
+            let initialized = false;
+
+            const close = () => {
+                if (!overlay) return;
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden', 'true');
+                const restore = lastActive;
+                lastActive = null;
+                if (restore && typeof restore.focus === 'function') {
+                    setTimeout(() => restore.focus(), 0);
+                }
+            };
+
+            const open = () => {
+                if (!initialized) init();
+                if (!overlay) return;
+                lastActive = document.activeElement;
+                if (frame && frame.getAttribute('src') !== PDF_SRC) {
+                    frame.setAttribute('src', PDF_SRC);
+                }
+                overlay.classList.add('open');
+                overlay.setAttribute('aria-hidden', 'false');
+                setTimeout(() => {
+                    if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
+                }, 20);
+            };
+
+            const init = () => {
+                if (initialized) return;
+                initialized = true;
+
+                overlay = document.getElementById('intraced-tutorial-overlay');
+                card = overlay ? overlay.querySelector('.tutorial-guide-card') : null;
+                frame = document.getElementById('intraced-tutorial-frame');
+                closeBtn = document.getElementById('intraced-tutorial-close');
+
+                if (!overlay || !card || !frame || !closeBtn) {
+                    return;
+                }
+
+                closeBtn.addEventListener('click', close);
+
+                overlay.addEventListener('click', (event) => {
+                    if (event.target === overlay) close();
+                });
+
                 document.addEventListener('keydown', (event) => {
                     if (!overlay.classList.contains('open')) return;
                     if (event.key === 'Escape') {
@@ -6302,6 +6503,7 @@
 
         // Start
         WorkflowGuide.init();
+        IntracedTutorial.init();
         Tooltip.init();
         App.init();
 
