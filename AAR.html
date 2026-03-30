@@ -2115,6 +2115,12 @@
             display: flex;
         }
 
+        .tutorial-guide-overlay.ios-pdf-mode {
+            padding: 0;
+            align-items: stretch;
+            justify-content: stretch;
+        }
+
         .tutorial-guide-card {
             position: relative;
             width: min(1440px, 99vw);
@@ -2130,11 +2136,22 @@
             overflow: hidden;
         }
 
+        .tutorial-guide-overlay.ios-pdf-mode .tutorial-guide-card {
+            width: 100vw;
+            height: 100dvh;
+            max-height: none;
+            border-radius: 0;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+            background: #0b1220;
+        }
+
         .tutorial-guide-close {
             position: absolute;
             top: 10px;
             right: 10px;
-            z-index: 2;
+            z-index: 4;
             border: 1px solid rgba(71, 85, 105, 0.85);
             background: rgba(15, 23, 42, 0.78);
             color: #e2e8f0;
@@ -2156,6 +2173,15 @@
             opacity: 1;
         }
 
+        .tutorial-guide-overlay.ios-pdf-mode .tutorial-guide-close {
+            top: max(8px, env(safe-area-inset-top));
+            right: max(8px, env(safe-area-inset-right));
+            width: 34px;
+            height: 34px;
+            border-color: rgba(148, 163, 184, 0.9);
+            background: rgba(2, 6, 23, 0.6);
+        }
+
         .tutorial-guide-pdf-wrap {
             border: 1px solid rgba(14, 165, 233, 0.35);
             border-radius: 12px;
@@ -2166,11 +2192,23 @@
             height: 100%;
         }
 
+        .tutorial-guide-overlay.ios-pdf-mode .tutorial-guide-pdf-wrap {
+            border: 0;
+            border-radius: 0;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-x pan-y pinch-zoom;
+        }
+
         .tutorial-guide-frame {
             border: 0;
             width: 100%;
             height: 100%;
             background: #0b1220;
+        }
+
+        .tutorial-guide-overlay.ios-pdf-mode .tutorial-guide-frame {
+            touch-action: pan-x pan-y pinch-zoom;
         }
 
         @media (max-width: 900px) {
@@ -3257,13 +3295,13 @@
         const IntracedTutorial = (() => {
             const PDF_PATH = './Tutoriel_AAR_Intraced_compressed.pdf';
             const PDF_SRC = `${PDF_PATH}#zoom=page-fit`;
-            const PDF_SRC_IOS = `${PDF_PATH}#view=FitH`;
             let overlay = null;
             let card = null;
             let frame = null;
             let closeBtn = null;
             let lastActive = null;
             let initialized = false;
+            let iosMode = false;
 
             const isIosLikeDevice = () => {
                 const ua = String(navigator.userAgent || '');
@@ -3276,6 +3314,7 @@
                 if (!overlay) return;
                 overlay.classList.remove('open');
                 overlay.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
                 const restore = lastActive;
                 lastActive = null;
                 if (restore && typeof restore.focus === 'function') {
@@ -3287,20 +3326,16 @@
                 if (!initialized) init();
                 if (!overlay) return;
 
-                if (isIosLikeDevice()) {
-                    const popup = window.open(PDF_SRC_IOS, '_blank', 'noopener,noreferrer');
-                    if (!popup) {
-                        window.location.href = PDF_SRC_IOS;
-                    }
-                    return;
-                }
-
                 lastActive = document.activeElement;
-                if (frame && frame.getAttribute('src') !== PDF_SRC) {
-                    frame.setAttribute('src', PDF_SRC);
+                if (frame) {
+                    const targetSrc = iosMode ? PDF_PATH : PDF_SRC;
+                    if (frame.getAttribute('src') !== targetSrc) {
+                        frame.setAttribute('src', targetSrc);
+                    }
                 }
                 overlay.classList.add('open');
                 overlay.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
                 setTimeout(() => {
                     if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
                 }, 20);
@@ -3314,10 +3349,13 @@
                 card = overlay ? overlay.querySelector('.tutorial-guide-card') : null;
                 frame = document.getElementById('intraced-tutorial-frame');
                 closeBtn = document.getElementById('intraced-tutorial-close');
+                iosMode = isIosLikeDevice();
 
                 if (!overlay || !card || !frame || !closeBtn) {
                     return;
                 }
+
+                overlay.classList.toggle('ios-pdf-mode', iosMode);
 
                 closeBtn.addEventListener('click', close);
 
