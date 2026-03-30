@@ -1,4 +1,4 @@
-const CACHE_NAME = "aar-shell-v18";
+const CACHE_NAME = "aar-shell-v19";
 const SHELL_URL = "./AAR.html";
 const CORE_ASSETS = [SHELL_URL];
 const OPTIONAL_ASSETS = [

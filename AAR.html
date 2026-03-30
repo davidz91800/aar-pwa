@@ -3257,12 +3257,20 @@
         const IntracedTutorial = (() => {
             const PDF_PATH = './Tutoriel_AAR_Intraced_compressed.pdf';
             const PDF_SRC = `${PDF_PATH}#zoom=page-fit`;
+            const PDF_SRC_IOS = `${PDF_PATH}#view=FitH`;
             let overlay = null;
             let card = null;
             let frame = null;
             let closeBtn = null;
             let lastActive = null;
             let initialized = false;
+
+            const isIosLikeDevice = () => {
+                const ua = String(navigator.userAgent || '');
+                const platform = String(navigator.platform || '');
+                const touchPoints = Number(navigator.maxTouchPoints || 0);
+                return /iPad|iPhone|iPod/i.test(ua) || (platform === 'MacIntel' && touchPoints > 1);
+            };
 
             const close = () => {
                 if (!overlay) return;
@@ -3278,6 +3286,15 @@
             const open = () => {
                 if (!initialized) init();
                 if (!overlay) return;
+
+                if (isIosLikeDevice()) {
+                    const popup = window.open(PDF_SRC_IOS, '_blank', 'noopener,noreferrer');
+                    if (!popup) {
+                        window.location.href = PDF_SRC_IOS;
+                    }
+                    return;
+                }
+
                 lastActive = document.activeElement;
                 if (frame && frame.getAttribute('src') !== PDF_SRC) {
                     frame.setAttribute('src', PDF_SRC);
