@@ -10,7 +10,7 @@ Ce dossier (`C - AAR PWA`) est la source de verite du formulaire AAR (`AAR.html`
 
 ## Schema AAR actif (maj 2026-03-30)
 - `Navigation`: ajout du bouton lateral `Tutoriel Intraced` (au-dessus de `Workflow AAR`) qui ouvre `Tutoriel_AAR_Intraced_compressed.pdf` dans une modale quasi plein ecran dediee au PDF (suppression des encarts haut/bas et des controles de pagination), avec fermeture par petite croix discrete, clic exterieur et touche `Echap`; affichage PDF regle en `page-fit`.
-- `Compatibilite iPad/iOS`: la modale Tutoriel reste ouverte dans l'app (avec la croix de fermeture) et applique un mode iOS dedie (layout plein ecran + iframe sans hash + scroll tactile/pinch-zoom actifs) pour corriger les blocages Safari.
+- `Compatibilite iPad/iOS`: la modale Tutoriel reste ouverte dans l'app (avec la croix de fermeture) et applique un mode iOS dedie (layout plein ecran + rendu PDF en canvas via pdf.js, scroll tactile vertical natif, pinch-zoom navigateur), avec fallback lien d'ouverture plein ecran si le rendu local echoue.
 - `Type d'AAR`: l'option UI `AAR FLASH` est renommee en `AAR BAAP` (valeur technique conservee: `FLASH`).
 - `0. Configuration`: les blocs `Type LOG/TAC` et `Cadre TAC` restent dans le JSON legacy mais sont masques dans l'UI.
 - `0. Configuration`: ajout d'un switch `Anonymisation AAR` compact avec infobulle explicite.

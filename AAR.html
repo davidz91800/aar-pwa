@@ -2198,6 +2198,7 @@
             overflow: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-x pan-y pinch-zoom;
+            padding: 12px 10px;
         }
 
         .tutorial-guide-frame {
@@ -2209,6 +2210,42 @@
 
         .tutorial-guide-overlay.ios-pdf-mode .tutorial-guide-frame {
             touch-action: pan-x pan-y pinch-zoom;
+        }
+
+        .tutorial-guide-ios-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tutorial-guide-ios-page {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 22px rgba(2, 6, 23, 0.32);
+        }
+
+        .tutorial-guide-ios-page canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .tutorial-guide-ios-status {
+            padding: 14px;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .tutorial-guide-ios-status.error {
+            color: #fecaca;
+        }
+
+        .tutorial-guide-ios-status a {
+            color: #93c5fd;
+            text-decoration: underline;
         }
 
         @media (max-width: 900px) {
@@ -2264,6 +2301,8 @@
             <button id="intraced-tutorial-close" type="button" class="tutorial-guide-close" aria-label="Fermer le tutoriel">&times;</button>
             <div class="tutorial-guide-pdf-wrap">
                 <iframe id="intraced-tutorial-frame" class="tutorial-guide-frame" title="Tutoriel Intraced" loading="lazy" src="./Tutoriel_AAR_Intraced_compressed.pdf#zoom=page-fit"></iframe>
+                <div id="intraced-tutorial-ios-pages" class="tutorial-guide-ios-pages" hidden></div>
+                <div id="intraced-tutorial-ios-status" class="tutorial-guide-ios-status" hidden></div>
             </div>
         </div>
     </div>
@@ -3295,13 +3334,22 @@
         const IntracedTutorial = (() => {
             const PDF_PATH = './Tutoriel_AAR_Intraced_compressed.pdf';
             const PDF_SRC = `${PDF_PATH}#zoom=page-fit`;
+            const PDFJS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            const PDFJS_WORKER_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             let overlay = null;
             let card = null;
+            let pdfWrap = null;
             let frame = null;
+            let iosPages = null;
+            let iosStatus = null;
             let closeBtn = null;
             let lastActive = null;
             let initialized = false;
             let iosMode = false;
+            let iosRenderTimer = null;
+            let pdfJsReadyPromise = null;
+            let iosRenderRevision = 0;
+            let lastIosRenderWidth = 0;
 
             const isIosLikeDevice = () => {
                 const ua = String(navigator.userAgent || '');
@@ -3310,11 +3358,103 @@
                 return /iPad|iPhone|iPod/i.test(ua) || (platform === 'MacIntel' && touchPoints > 1);
             };
 
+            const ensurePdfJsReady = () => {
+                if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+                if (pdfJsReadyPromise) return pdfJsReadyPromise;
+                pdfJsReadyPromise = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = PDFJS_SRC;
+                    script.async = true;
+                    script.onload = () => {
+                        if (!window.pdfjsLib) {
+                            reject(new Error('pdf.js non disponible apres chargement.'));
+                            return;
+                        }
+                        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_SRC;
+                        resolve(window.pdfjsLib);
+                    };
+                    script.onerror = () => reject(new Error('Chargement pdf.js impossible.'));
+                    document.head.appendChild(script);
+                });
+                return pdfJsReadyPromise;
+            };
+
+            const setIosStatus = (message = '', options = {}) => {
+                if (!iosStatus) return;
+                const text = String(message || '').trim();
+                iosStatus.hidden = !text;
+                iosStatus.classList.toggle('error', !!options.error);
+                if (!text) {
+                    iosStatus.innerHTML = '';
+                    return;
+                }
+                if (options.allowHtml) iosStatus.innerHTML = text;
+                else iosStatus.textContent = text;
+            };
+
+            const renderIosPdf = async () => {
+                if (!iosMode || !iosPages || !pdfWrap) return;
+                const availableWidth = Math.max(320, Math.floor((pdfWrap.clientWidth || window.innerWidth || 768) - 24));
+                if (Math.abs(availableWidth - lastIosRenderWidth) < 8 && iosPages.childElementCount > 0) return;
+                lastIosRenderWidth = availableWidth;
+
+                const revision = ++iosRenderRevision;
+                iosPages.innerHTML = '';
+                setIosStatus('Chargement du tutoriel...');
+                try {
+                    const pdfjsLib = await ensurePdfJsReady();
+                    const loadingTask = pdfjsLib.getDocument(PDF_PATH);
+                    const pdf = await loadingTask.promise;
+                    if (revision !== iosRenderRevision) return;
+
+                    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                        const page = await pdf.getPage(pageNumber);
+                        if (revision !== iosRenderRevision) return;
+                        const baseViewport = page.getViewport({ scale: 1 });
+                        const scale = availableWidth / Math.max(1, baseViewport.width);
+                        const viewport = page.getViewport({ scale });
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d', { alpha: false });
+                        canvas.width = Math.round(viewport.width);
+                        canvas.height = Math.round(viewport.height);
+                        if (!ctx) continue;
+                        await page.render({ canvasContext: ctx, viewport }).promise;
+                        if (revision !== iosRenderRevision) return;
+                        const pageWrap = document.createElement('div');
+                        pageWrap.className = 'tutorial-guide-ios-page';
+                        pageWrap.appendChild(canvas);
+                        iosPages.appendChild(pageWrap);
+                    }
+
+                    setIosStatus('');
+                } catch (error) {
+                    const message = `
+                        Affichage iPad indisponible ici.<br>
+                        <a href="${PDF_PATH}" target="_blank" rel="noopener noreferrer">Ouvrir le PDF en plein ecran</a>
+                    `;
+                    setIosStatus(message, { error: true, allowHtml: true });
+                    console.warn('Intraced iOS PDF render failed:', error);
+                }
+            };
+
+            const scheduleIosRender = (delay = 140) => {
+                if (!iosMode) return;
+                if (iosRenderTimer) clearTimeout(iosRenderTimer);
+                iosRenderTimer = window.setTimeout(() => {
+                    iosRenderTimer = null;
+                    if (overlay && overlay.classList.contains('open')) renderIosPdf();
+                }, delay);
+            };
+
             const close = () => {
                 if (!overlay) return;
                 overlay.classList.remove('open');
                 overlay.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
+                if (iosRenderTimer) {
+                    clearTimeout(iosRenderTimer);
+                    iosRenderTimer = null;
+                }
                 const restore = lastActive;
                 lastActive = null;
                 if (restore && typeof restore.focus === 'function') {
@@ -3328,7 +3468,7 @@
 
                 lastActive = document.activeElement;
                 if (frame) {
-                    const targetSrc = iosMode ? PDF_PATH : PDF_SRC;
+                    const targetSrc = iosMode ? 'about:blank' : PDF_SRC;
                     if (frame.getAttribute('src') !== targetSrc) {
                         frame.setAttribute('src', targetSrc);
                     }
@@ -3336,6 +3476,15 @@
                 overlay.classList.add('open');
                 overlay.setAttribute('aria-hidden', 'false');
                 document.body.style.overflow = 'hidden';
+                if (iosMode) {
+                    if (frame) frame.hidden = true;
+                    if (iosPages) iosPages.hidden = false;
+                    scheduleIosRender(20);
+                } else {
+                    if (frame) frame.hidden = false;
+                    if (iosPages) iosPages.hidden = true;
+                    setIosStatus('');
+                }
                 setTimeout(() => {
                     if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
                 }, 20);
@@ -3347,15 +3496,20 @@
 
                 overlay = document.getElementById('intraced-tutorial-overlay');
                 card = overlay ? overlay.querySelector('.tutorial-guide-card') : null;
+                pdfWrap = overlay ? overlay.querySelector('.tutorial-guide-pdf-wrap') : null;
                 frame = document.getElementById('intraced-tutorial-frame');
+                iosPages = document.getElementById('intraced-tutorial-ios-pages');
+                iosStatus = document.getElementById('intraced-tutorial-ios-status');
                 closeBtn = document.getElementById('intraced-tutorial-close');
                 iosMode = isIosLikeDevice();
 
-                if (!overlay || !card || !frame || !closeBtn) {
+                if (!overlay || !card || !pdfWrap || !frame || !iosPages || !iosStatus || !closeBtn) {
                     return;
                 }
 
                 overlay.classList.toggle('ios-pdf-mode', iosMode);
+                iosPages.hidden = true;
+                iosStatus.hidden = true;
 
                 closeBtn.addEventListener('click', close);
 
@@ -3370,6 +3524,12 @@
                         close();
                     }
                 });
+
+                window.addEventListener('resize', () => {
+                    if (!iosMode) return;
+                    if (!overlay.classList.contains('open')) return;
+                    scheduleIosRender(90);
+                }, { passive: true });
             };
 
             return { init, open, close };
